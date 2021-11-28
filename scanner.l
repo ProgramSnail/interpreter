@@ -35,6 +35,12 @@ id    [a-zA-Z][a-zA-Z_0-9]*
 int   [0-9]+
 blank [ \t\r]
 
+tag #[a-zA-Z_0-9]+
+value $[a-zA-Z_0-9]+
+ch '[^\"'\\]|(\\["'0n\\])'
+str \"{ch}*\"
+
+
 %{
   // Code run each time a pattern is matched.
   #define YY_USER_ACTION UpdateLocation();
@@ -70,16 +76,34 @@ blank [ \t\r]
     loc.step();
 }
 
-"-"        {
-              return yy::parser::make_MINUS  (loc);
-           }
-"+"        return yy::parser::make_PLUS   (loc);
-"*"        return yy::parser::make_STAR   (loc);
-"/"        return yy::parser::make_SLASH  (loc);
-"("        return yy::parser::make_LPAREN (loc);
-")"        return yy::parser::make_RPAREN (loc);
-":="       return yy::parser::make_ASSIGN (loc);
+"="        return yy::parser::make_ASSIGN(loc);
+
+"-"        return yy::parser::make_MINUS(loc);
+"+"        return yy::parser::make_PLUS(loc);
+"*"        return yy::parser::make_STAR(loc);
+"/"        return yy::parser::make_SLASH(loc);
+"%"        return yy::parser::make_MOD(loc);
+
+","        return yy::parser::make_COMMA(loc);
+
+"=="       return yy::parser::make_EQUAL();
+"!="       return yy::parser::make_NOT_EQUAL();
+
+"!"        return yy::parser::make_NOT();
+"&"        return yy::parser::make_AND();
+"|"        return yy::parser::make_OR();
+
+"("        return yy::parser::make_LPAREN(loc);
+")"        return yy::parser::make_RPAREN(loc);
+"["        return yy::parser::make_LBRACKET(loc);
+"]"        return yy::parser::make_RBRACKET(loc);
+"{"        return yy::parser::make_LBLOCK(loc);
+"}"        return yy::parser::make_RBLOCK(loc);
+
+":"        return yy::parser::make_COLON(loc); 
 ";"        return yy::parser::make_SEMICOLON(loc);
+"?"        return yy::parser::make_CONDITION(loc);
+"@"        return yy::parser::make_LOOP(loc);
 
 {int}      return make_NUMBER(yytext, loc);
 {id}       {
@@ -88,6 +112,18 @@ blank [ \t\r]
                 }
                 return yy::parser::make_IDENTIFIER(yytext, loc);
            }
+{tag}      return yy::parser::make_TAG(yytext, value);
+{value}    {
+                if (strcmp(yytext, "#true")) {
+                    return yy::parser::make_LOGICAL_CONSTANT(true, loc);
+                } else if (strcmp(yytext, "#false")) {
+                    return yy::parser::make_LOGICAL_CONSTANT(false, loc);
+                } else {
+                    return yy::parser::make_VALUE(yytext, loc);
+                }
+           }
+{ch}       return yy::parser::make_CHARACTER(yytext, loc);
+{str}      return yy::parser::MAKE_STRING(yytext, loc);
 .          {
                 throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
            }

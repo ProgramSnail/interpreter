@@ -8,6 +8,7 @@
 
 %code requires {
     #include <string>
+    #include <variant>
     /* Forward declaration of classes in order to disable cyclic dependencies */
     class Scanner;
     class Driver;
@@ -38,19 +39,47 @@
 // token name in variable
 %token
     END 0 "end of file"
-    ASSIGN ":="
+    ASSIGN "="
+    
     MINUS "-"
     PLUS "+"
     STAR "*"
     SLASH "/"
+    MOD "%"
+
+    COMMA ","
+
+    EQUAL "=="
+    NOT_EQUAL "!="
+
+    NOT "!"
+    AND "&"
+    OR "|"
+
     LPAREN "("
     RPAREN ")"
+    RBRACKET "["
+    LBRACKET "]"
+    LBLOCK "{"
+    RBLOCK "}"
+    
+    COLON ":"
     SEMICOLON ";"
+    CONDITION "?"
+    LOOP "@"
 ;
 
 %token <std::string> IDENTIFIER "identifier"
+%token <std::string> TAG "tag"
+%token <std::string> VALUE "value"
+%token <std::string> STRING "string"
+%token <std::string> CHARACTER "character"
 %token <int> NUMBER "number"
-%nterm <int> exp
+%token <bool> LOGICAL_CONSTANT "logical_constant"
+
+%nterm <std::vector<std::string>> tags
+%nterm <std::pair<int, bool>> any_expr // better have std::variant, but it requires c++17
+%nterm <int> expr
 
 // Prints output in parsing option for debugging location terminal
 %printer { yyo << $$; } <*>;
@@ -59,35 +88,102 @@
 %left "+" "-";
 %left "*" "/";
 
+%left "!";
+%left "&" "|" "^";
+
 %start unit;
 unit: assignments exp ";" { driver.result = $2; };
 
-assignments:
+statements:
     %empty {}
-    | assignments assignment {};
+    | statements statement {};
+
+statement:
+    assignment {}
+    | create_var {}
+    | loop {}
+    | condition {};
+
+create_var: // todo: add initialization
+    "identifier" ":" tags {
+        //
+    }
+    | "identifier" ":" tags {
+        //
+    };
+
+call_func:
+    "identifier" "(" args ")" ";" {};
+
+args:
+    %empty {
+        //
+    }
+    | any_expr "," args {
+        //
+    };
+
+any_expr:
+    expr {
+        //
+    }
+    | logical_expr {
+        //
+    };
+
+tags:
+    "tag" { $$ = $1; }
+    | "tag" tags { 
+        $$ = $2;
+        $$.push_back($1);
+    };
 
 assignment:
-    "identifier" ":=" exp ";" {
+    "identifier" "=" expr ";" {
+        //
         driver.variables[$1] = $3;
         if (driver.location_debug) {
             std::cerr << driver.location << std::endl;
         }
     }
-    | error ";" {
+    | "identifier" "=" logical_expr ";" {
+        //
+    }
+    | error ";" { // ??
     	// Hint for compilation error, resuming producing messages
     	std::cerr << "You should provide assignment in the form: variable := expression ; " << std::endl;
     };
 
 
+loop:
+    "@" "(" LOGICAL_EXPR ")" "{" statements "}" {
+        //
+    };
 
-exp:
+condition:
+    "?" "(" LOGICAL_EXPR ")" "{" statements "}" {
+        //
+    };
+
+expr:
     "number"
-    | "identifier" {$$ = driver.variables[$1];}
-    | exp "+" exp {$$ = $1 + $3; }
-    | exp "-" exp {$$ = $1 - $3; }
-    | exp "*" exp {$$ = $1 * $3; }
-    | exp "/" exp {$$ = $1 / $3; }
-    | "(" exp ")" {$$ = $2; };
+    | "identifier" { $$ = driver.variables[$1]; }
+    | expr "+" expr { $$ = $1 + $3; }
+    | expr "-" expr { $$ = $1 - $3; }
+    | expr "*" expr { $$ = $1 * $3; }
+    | expr "/" expr { $$ = $1 / $3; }
+    | expr "%" expr { $$ = $1 % $3; }
+    | "(" expr ")" { $$ = $2; };
+
+logical_expr:
+    "logical_constant"
+    | "identifier" { $$ = driver.variables[$1]; }
+    | "!" logical_expr { $$ = !$2; }
+    | logical_expr "&" logical_expr { $$ = $1 && $3; }
+    | logical_expr "|" logical_expr { $$ = $1 || $3; }
+    | "(" logical_expr ")" { $$ = $2; }
+    | any_expr "==" any_expr {$$ = ($1 == $3); }
+    | any_expr "!=" any_expr {$$ = ($1 != $3); };
 
 %%
 
