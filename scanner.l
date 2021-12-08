@@ -114,9 +114,9 @@ str \"{ch}*\"
            }
 {tag}      return yy::parser::make_TAG(yytext, value);
 {value}    {
-                if (strcmp(yytext, "#true")) {
+                if (strcmp(yytext, "$true")) {
                     return yy::parser::make_LOGICAL_CONSTANT(true, loc);
-                } else if (strcmp(yytext, "#false")) {
+                } else if (strcmp(yytext, "$false")) {
                     return yy::parser::make_LOGICAL_CONSTANT(false, loc);
                 } else {
                     return yy::parser::make_VALUE(yytext, loc);

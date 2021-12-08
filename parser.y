@@ -8,7 +8,6 @@
 
 %code requires {
     #include <string>
-    #include <variant>
     /* Forward declaration of classes in order to disable cyclic dependencies */
     class Scanner;
     class Driver;
@@ -18,11 +17,12 @@
     class ExprNode;
     class NumberExprNode;
     class VarExprNode;
-    class VarNode;
     class LogicalExprNode;
     class ComparasionNode;
-    class AssignNode;
+    class LogicalConstantNode;
+    class AssignmentNode;
     class CallFuncNode;
+    class CallTFuncNode;
     class BlockNode;
     class ConditionNode;
     class LoopNode;
@@ -92,59 +92,81 @@
 %token <int> NUMBER "number"
 %token <bool> LOGICAL_CONSTANT "logical_constant"
 
+%nterm <std::vector<std::unique_ptr<Node>>> statements
+%nterm <std::unique_ptr<Node>> statement
+%nterm <std::unique_ptr<CallFuncNode>> call_func
+%nterm <std::vector<std::unique_ptr<Node>>> args
+
 %nterm <std::vector<std::string>> tags
-%nterm <std::variant<int, bool>> any_expr
-%nterm <int> expr
+%nterm <std::unique_ptr<Node>> any_expr
+%nterm <std::unique_ptr<AssignmentNode>> assignment
+%nterm <std::unique_ptr<LogicalExprNode>> logical_expr
+%nterm <std::unique_ptr<ExprNode>> expr
 
 // Prints output in parsing option for debugging location terminal
 %printer { yyo << $$; } <*>;
 
 %%
 %left "+" "-";
-%left "*" "/";
+%left "*" "/" "%";
 
 %left "!";
 %left "&" "|" "^";
 
-%start unit;
-unit: assignments exp ";" { driver.result = $2; };
-
+%start statements;
 statements:
-    %empty {}
-    | statements statement {};
+    %empty {
+        //$$ = vector<std::unique_ptr<Node>>();
+    }
+    | statements statement {
+        $$ = std::move($1);
+        $$.push_back(std::move(make_unique($2)));
+    };
 
 statement:
-    assignment {}
-    | call_func ";" {}
-    | create_var {}
-    | loop {}
-    | condition {};
+    assignment ";" {
+        $$ = std::move($1);
+    }
+    | call_func ";" {
+        $$ = std::move($1);
+    }
+    | create_var {
+        $$ = std::move($1);
+    }
+    | loop {
+        $$ = std::move($1);
+    }
+    | condition {
+        $$ = std::move($1);
+    };
 
 create_var: // todo: add initialization
     "identifier" ":" tags {
-        //
-    }
-    | "identifier" ":" tags {
-        //
+        driver.variables[$1] = 0;
     };
 
 call_func:
-    "identifier" "(" args ")" {};
+    "identifier" "(" args ")" {
+        FuncType id = FuncType::NONE;
+        // choose func type from $1
+        $$ = make_unique<CallFuncNode>(id, $3);
+    };
 
 args:
     %empty {
-        //
+        // $$ = vector<std::unique_ptr<Node>>()
     }
-    | any_expr "," args {
-        //
+    | args "," expr {
+        $$ = std::move($1);
+        $$.push_back(std::move($3));
     };
 
 any_expr:
     expr {
-        //
+        $$ = std::move($1);
     }
     | logical_expr {
-        //
+        $$ = std::move($1);
     };
 
 tags:
@@ -155,55 +177,84 @@ tags:
     };
 
 assignment:
-    "identifier" "=" expr ";" {
-        //
-        if (std::holds_alternative<int>($3)) {
-            driver.variables[$1] = std::get<int>($3);
-        } else {
-            driver.variables[$1] = std::get<bool>($3);
-        }
-        if (driver.location_debug) {
+    "identifier" "=" expr {
+        $$ = std::make_unique<AssignmentNode>($1, $3);
+        /*if (driver.location_debug) {
             std::cerr << driver.location << std::endl;
-        }
-    }
-    | error ";" { // ??
+        }*/
+    };
+    /*| error ";" { // ??
     	// Hint for compilation error, resuming producing messages
     	std::cerr << "You should provide assignment in the form: variable := expression ; " << std::endl;
-    };
+    };*/
 
 
 loop:
     "@" "(" LOGICAL_EXPR ")" block {
-        //
+        $$ = make_unique<LoopNode>(std::move($3), std::move($5));
     };
 
 condition:
     "?" "(" LOGICAL_EXPR ")" block {
-        //
+        $$ = make_unique();
     };
 
 expr:
-    "number" {}
-    | "identifier" { $$ = driver.variables[$1]; }
-    | call_func {
-        //
+    "number" { 
+        $$ = std::make_unique<NumberExprNode>($1); 
     }
-    | expr "+" expr { $$ = $1 + $3; }
-    | expr "-" expr { $$ = $1 - $3; }
-    | expr "*" expr { $$ = $1 * $3; }
-    | expr "/" expr { $$ = $1 / $3; }
-    | expr "%" expr { $$ = $1 % $3; } 
-    | "(" expr ")" { $$ = $2; };
+    | "identifier" { 
+        $$ = std::make_unique<VarExprNode>($1);
+        /*driver.variables[$1];*/
+    }
+    | call_func {
+        $$ = std::move($1);
+    }
+    | "-" expr {
+        $$ = std::make_unique<ExprNode>($2, nullptr, Operator::NEGATIVE);
+    }
+    | expr "+" expr { 
+        $$ = std::make_unique<ExprNode>($1, $3, Operator::ADD); }
+    | expr "-" expr { 
+        $$ = std::make_unique<ExprNode>($1, $3, Operator::SUB); }
+    | expr "*" expr { 
+        $$ = std::make_unique<Expr_Node>($1, $3 Operator::MULT); }
+    | expr "/" expr { 
+        $$ = std::make_unique<ExprNode>($1, $3 Operator::DIV); }
+    | expr "%" expr { 
+        $$ = std::make_unique<ExprNode>($1, $3, Operator::MOD); } 
+    | "(" expr ")" { 
+        $$ = std::move($2); 
+    };
 
 logical_expr:
-    "logical_constant"
-    | "identifier" { $$ = driver.variables[$1]; }
-    | "!" logical_expr { $$ = !$2; }
-    | logical_expr "&" logical_expr { $$ = $1 && $3; }
-    | logical_expr "|" logical_expr { $$ = $1 || $3; }
-    | "(" logical_expr ")" { $$ = $2; }
-    | any_expr "==" any_expr {$$ = ($1 == $3); }
-    | any_expr "!=" any_expr {$$ = ($1 != $3); };
+    "logical_constant" {
+        $$ = std::make_unique<LogicalConstantNode>($1);
+    }
+    | "!" logical_expr { 
+        $$ = std::make_unique<LogicalExprNode>($2, nullptr, LogicalOperator::NOT);
+    }
+    | logical_expr "&" logical_expr { 
+        $$ = std::make_unique<LogicalExprNode>($1, $3, LogicalOperator::AND);
+    }
+    | logical_expr "|" logical_expr { 
+        $$ = std::make_unique<LogicalExprNode>($1, $3, LogicalOperator::OR); 
+    }
+    | logical_expr "==" logical_expr {
+        $$ = std::make_unique<LogicalExprNode>($1, $3, LogicalOperator::EQUAL); 
+    }
+    | logical_expr "!=" logical_expr {
+        $$ = std::make_unique<LogicalExprNode>($1, $3, LogicalOperator::NOT_EQUAL); 
+    }
+    | "(" logical_expr ")" { 
+        $$ = std::move($2); 
+    }
+    | expr "==" expr {
+        $$ = std::make_unique<ComparasionNode>($1, $3, LogicalOperator::EQUAL); 
+    }
+    | expr "!=" expr {
+        $$ = std::make_unique<ComparasionNode>($1, $3, LogicalOperator::NOT_EQUAL); 
+    };
 
 %%
 

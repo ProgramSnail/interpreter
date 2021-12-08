@@ -127,16 +127,10 @@ protected:
 public:
 	VarExprNode(const std::string& id) : id(id) {}
 	T execute(ExecuteTag) override {
+		return T();
+		//
 		// return values[id]; 
 	}
-};
-
-class VarNode : public Node {
-protected:
-	std::string id;
-public:
-	VarNode(const std::string& id) : id(id) {}
-	void execute() override {}
 };
 
 class LogicalExprNode : public Node {
@@ -187,9 +181,9 @@ public:
 	}
 };
 
-class ComparationNode : public LogicalExprNode {
+class ComparasionNode : public LogicalExprNode {
 public:
-	ComparationNode(std::unique_ptr<ExprNode>&& left,
+	ComparasionNode(std::unique_ptr<ExprNode>&& left,
 			std::unique_ptr<ExprNode>&& right,
 			LogicalOperator oper)
 			: LogicalExprNode(std::move(left), std::move(right), oper) {}
@@ -214,27 +208,27 @@ public:
 	}
 };
 
-class LogicalConstant : public LogicalExprNode {
+class LogicalConstantNode : public LogicalExprNode {
 protected:
 	bool value;
 public:
-	LogicalConstant(bool value) : value(value) {}
+	LogicalConstantNode(bool value) : value(value) {}
 	bool execute(ExecuteTag) override {
 		return value;
 	}
 };
 
-class AssignNode : public Node {
+class AssignmentNode : public Node {
 protected:
-	std::unique_ptr<VarNode> var;
+	std::string varId;
 	std::unique_ptr<ExprNode> expr;
 public:
-	AssignNode(std::unique_ptr<VarNode>&& var,
+	AssignmentNode(const std::string& varId,
 			std::unique_ptr<ExprNode>&& expr) 
-			: var(std::move(var)), 
+			: varId(varId), 
 				expr(std::move(expr)) {}
 	void execute() {
-		// value[var] = expr;
+		// value[varId] = expr;
 	}
 };
 
