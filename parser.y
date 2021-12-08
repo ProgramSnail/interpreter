@@ -12,6 +12,20 @@
     /* Forward declaration of classes in order to disable cyclic dependencies */
     class Scanner;
     class Driver;
+
+    class Node;
+    class RootNode;
+    class ExprNode;
+    class NumberExprNode;
+    class VarExprNode;
+    class VarNode;
+    class LogicalExprNode;
+    class ComparasionNode;
+    class AssignNode;
+    class CallFuncNode;
+    class BlockNode;
+    class ConditionNode;
+    class LoopNode;
 }
 
 
@@ -21,6 +35,7 @@
 %code {
     #include "driver.hh"
     #include "location.hh"
+    #include "parse_tree.hh"
 
     /* Redefine parser to use our function from scanner */
     static yy::parser::symbol_type yylex(Scanner &scanner) {
@@ -78,7 +93,7 @@
 %token <bool> LOGICAL_CONSTANT "logical_constant"
 
 %nterm <std::vector<std::string>> tags
-%nterm <std::pair<int, bool>> any_expr // better have std::variant, but it requires c++17
+%nterm <std::variant<int, bool>> any_expr
 %nterm <int> expr
 
 // Prints output in parsing option for debugging location terminal
@@ -100,6 +115,7 @@ statements:
 
 statement:
     assignment {}
+    | call_func ";" {}
     | create_var {}
     | loop {}
     | condition {};
@@ -113,7 +129,7 @@ create_var: // todo: add initialization
     };
 
 call_func:
-    "identifier" "(" args ")" ";" {};
+    "identifier" "(" args ")" {};
 
 args:
     %empty {
@@ -141,13 +157,14 @@ tags:
 assignment:
     "identifier" "=" expr ";" {
         //
-        driver.variables[$1] = $3;
+        if (std::holds_alternative<int>($3)) {
+            driver.variables[$1] = std::get<int>($3);
+        } else {
+            driver.variables[$1] = std::get<bool>($3);
+        }
         if (driver.location_debug) {
             std::cerr << driver.location << std::endl;
         }
-    }
-    | "identifier" "=" logical_expr ";" {
-        //
     }
     | error ";" { // ??
     	// Hint for compilation error, resuming producing messages
@@ -156,23 +173,26 @@ assignment:
 
 
 loop:
-    "@" "(" LOGICAL_EXPR ")" "{" statements "}" {
+    "@" "(" LOGICAL_EXPR ")" block {
         //
     };
 
 condition:
-    "?" "(" LOGICAL_EXPR ")" "{" statements "}" {
+    "?" "(" LOGICAL_EXPR ")" block {
         //
     };
 
 expr:
-    "number"
+    "number" {}
     | "identifier" { $$ = driver.variables[$1]; }
+    | call_func {
+        //
+    }
     | expr "+" expr { $$ = $1 + $3; }
     | expr "-" expr { $$ = $1 - $3; }
     | expr "*" expr { $$ = $1 * $3; }
     | expr "/" expr { $$ = $1 / $3; }
-    | expr "%" expr { $$ = $1 % $3; }
+    | expr "%" expr { $$ = $1 % $3; } 
     | "(" expr ")" { $$ = $2; };
 
 logical_expr:
