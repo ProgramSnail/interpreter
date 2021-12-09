@@ -1,3 +1,4 @@
+
 #pragma once
 
 #if ! defined(yyFlexLexerOnce)
@@ -13,9 +14,9 @@ class Driver;
 
 class Scanner: public yyFlexLexer {
  public:
-    Scanner(Driver& driver): driver(driver) {}
+   Scanner(Driver& driver): driver(driver) {}
 	virtual ~Scanner() {}
 	virtual yy::parser::symbol_type ScanToken();
-    Driver &driver;
-    void UpdateLocation();
+   Driver &driver;
+   void UpdateLocation();
 };

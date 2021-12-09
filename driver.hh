@@ -3,14 +3,15 @@
 #include <map>
 #include <string>
 #include <fstream>
+
 #include "scanner.h"
 #include "parser.hh"
-
+#include "storage.hh"
 
 class Driver {
  public:
     Driver();
-    std::map<std::string, int> variables;
+    Storage storage;
     int result;
     int parse(const std::string& f);
     std::string file;

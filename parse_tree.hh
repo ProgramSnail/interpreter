@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <any>
+#include <iostream>
+
+#include "storage.hh"
 
 enum class Operator {
 	NONE,
@@ -22,14 +24,17 @@ enum class LogicalOperator {
 	AND,
 	OR,
 	EQUAL,
-	NOT_EQUAL
+	NOT_EQUAL,
+	LESS,
+	GREATHER
 };
 
 enum class FuncType {
-	WRITE,
-	WRITE_STR, 
-	READ,
-	READ_STR
+	NONE,
+	WRITE, // for strings
+	// READ, // for strings
+	PRINT, // for T
+	SCAN // for T
 };
 
 using T = int;
@@ -40,17 +45,47 @@ struct RuntimeError {
 	std::string msg;
 };
 
+void CallRuntimeError(const std::string& msg);
+
+class Node;
+class RootNode;
+class ExprNode;
+class NumberExprNode;
+class VarExprNode;
+class LogicalExprNode;
+class ComparasionNode;
+class LogicalConstantNode;
+class AssignmentNode;
+class StringNode;
+class CallFuncNode;
+class CallTFuncNode;
+class BlockNode;
+class ConditionNode;
+class LoopNode;
+class CreateVarNode;
+
+
 class Node {
 public:
-	virtual void execute();
+	virtual void execute() = 0;
+	
+	virtual ~Node() {}
 };
 
 class RootNode : public Node {
-	std::unique_ptr<Node> node;
-	RootNode(std::unique_ptr<Node>&& node)
-			: node(std::move(node)) {}
+private:
+	Node* node;
+public:
+	
+	RootNode(Node* node)
+			: node(node) {}
+	
 	void execute() override {
 		node->execute();
+	}
+	
+	~RootNode() {
+		delete node;
 	}
 };
 
@@ -58,57 +93,26 @@ class RootNode : public Node {
 
 class ExprNode : public Node {
 protected:
-	std::unique_ptr<ExprNode> left;
-	std::unique_ptr<ExprNode> right;
+	ExprNode* left;
+	ExprNode* right;
 	Operator oper = Operator::NONE;
 public:
 	ExprNode() = default;
-	ExprNode(std::unique_ptr<ExprNode>&& left,
-			std::unique_ptr<ExprNode>&& right, 
+	ExprNode(ExprNode* left,
+			ExprNode* right, 
 			Operator oper) 
-			: left(std::move(left)),
-				right(std::move(right)), oper(oper) {}
+			: left(left), right(right), oper(oper) {}
 
-	virtual T execute(ExecuteTag) {
-		T ans = T();
-		T leftAns = left->execute(ExecuteTag());
-		T rightAns = T();
-		if (right != nullptr) {
-			rightAns = right->execute(ExecuteTag());
-		}
-		switch (oper) {
-			case Operator::NEGATIVE:
-				ans = -leftAns;
-				break; 
-			case Operator::ADD:
-				ans = leftAns + rightAns;
-				break;
-			case Operator::SUB:
-				ans = leftAns - rightAns;
-				break;
-			case Operator::MULT:
-				ans = leftAns * rightAns;
-				break;
-			case Operator::DIV:
-				if (rightAns == 0) {
-					throw RuntimeError{"RE: Divide by zero."};
-				}
-				ans = leftAns / rightAns;
-				break;
-			case Operator::MOD:
-				if (rightAns == 0) {
-					throw RuntimeError{"RE: Mod by zero."};
-				}
-				ans = leftAns % rightAns;
-				break;
-			default:
-				throw RuntimeError{"RE: Not recognized operator in expression."};
-		}
-		return ans;
-	}
+	virtual T execute(ExecuteTag);
+
 	void execute() override {
 		execute(ExecuteTag());
 	};
+
+	~ExprNode() {
+		delete left;
+		delete right;
+	}
 };
 
 class NumberExprNode : public ExprNode {
@@ -116,6 +120,7 @@ protected:
 	T value;
 public:
 	NumberExprNode(const T& value) : value(value) {}
+	
 	T execute(ExecuteTag) override {
 		return value;
 	};
@@ -124,88 +129,45 @@ public:
 class VarExprNode : public ExprNode {
 protected:
 	std::string id;
+	Storage* storage;
 public:
-	VarExprNode(const std::string& id) : id(id) {}
-	T execute(ExecuteTag) override {
-		return T();
-		//
-		// return values[id]; 
-	}
+	VarExprNode(const std::string& id, Storage* storage) 
+			: id(id), storage(storage) {}
+	
+	T execute(ExecuteTag) override;
 };
 
 class LogicalExprNode : public Node {
 protected:
-	std::unique_ptr<Node> left;
-	std::unique_ptr<Node> right;
+	Node* left;
+	Node* right;
 	LogicalOperator oper = LogicalOperator::NONE;
 public:
 	LogicalExprNode() = default;
-	LogicalExprNode(std::unique_ptr<Node>&& left,
-			std::unique_ptr<Node>&& right,
-			LogicalOperator oper) 
-			: left(std::move(left)), 
-				right(std::move(right)), oper(oper) {}
-	virtual bool execute(ExecuteTag) {
-		bool ans = false;
-		bool leftAns = dynamic_cast<LogicalExprNode*>(
-					left.get())->execute(ExecuteTag());
-		bool rightAns = false;
-		if (right != nullptr) {
-			rightAns = dynamic_cast<LogicalExprNode*>(
-					right.get())->execute(ExecuteTag()); 
-		}
-		switch (oper) {
-			case LogicalOperator::NOT:
-				ans = !leftAns;
-				break;
-			case LogicalOperator::AND:
-				ans = (leftAns && rightAns);
-				break;
-			case LogicalOperator::OR:
-				ans = (leftAns || rightAns);
-				break;
-			case LogicalOperator::EQUAL:
-				ans = (leftAns == rightAns);
-				break;
-			case LogicalOperator::NOT_EQUAL:
-				ans = (leftAns != rightAns);
-				break;
-			default:
-				throw RuntimeError{"RE: Not recognized operator in logical expression."};
-				break;
-		}
-		return ans;
-	}
+	LogicalExprNode(Node* left,
+			Node* right, LogicalOperator oper) 
+			: left(left), right(right), oper(oper) {}
+	
+	virtual bool execute(ExecuteTag);
+
 	void execute() override {
 		execute(ExecuteTag());
+	}
+
+	~LogicalExprNode() {
+		delete left;
+		delete right;
 	}
 };
 
 class ComparasionNode : public LogicalExprNode {
 public:
-	ComparasionNode(std::unique_ptr<ExprNode>&& left,
-			std::unique_ptr<ExprNode>&& right,
+	ComparasionNode(ExprNode* left,
+			ExprNode* right,
 			LogicalOperator oper)
-			: LogicalExprNode(std::move(left), std::move(right), oper) {}
-	bool execute(ExecuteTag) override {
-		bool ans = false;
-		T leftAns = dynamic_cast<ExprNode*>(
-				left.get())->execute(ExecuteTag());
-		T rightAns = dynamic_cast<ExprNode*>(
-				right.get())->execute(ExecuteTag());
-		switch (oper) {
-			case LogicalOperator::EQUAL:
-				ans = (leftAns == rightAns);
-				break;
-			case LogicalOperator::NOT_EQUAL:
-				ans = (leftAns != rightAns);
-				break;
-			default:
-				throw RuntimeError{"RE: Not alloved logical operator in comparasion."};
-				break;
-		}
-		return ans;
-	}
+			: LogicalExprNode(left, right, oper) {}
+
+	bool execute(ExecuteTag) override;
 };
 
 class LogicalConstantNode : public LogicalExprNode {
@@ -213,6 +175,7 @@ protected:
 	bool value;
 public:
 	LogicalConstantNode(bool value) : value(value) {}
+
 	bool execute(ExecuteTag) override {
 		return value;
 	}
@@ -221,50 +184,80 @@ public:
 class AssignmentNode : public Node {
 protected:
 	std::string varId;
-	std::unique_ptr<ExprNode> expr;
+	ExprNode* expr;
+	Storage* storage;
 public:
-	AssignmentNode(const std::string& varId,
-			std::unique_ptr<ExprNode>&& expr) 
-			: varId(varId), 
-				expr(std::move(expr)) {}
-	void execute() {
-		// value[varId] = expr;
+	AssignmentNode(const std::string& varId, 
+			ExprNode* expr, Storage* storage) 
+			: varId(varId), expr(expr), storage(storage) {}
+
+	void execute() override;
+
+	~AssignmentNode() {
+		delete expr;
+	}
+};
+
+class StringNode : public Node {
+private:
+	std::string str;
+public:
+	StringNode(const std::string& tmpStr) : str(tmpStr) {
+		/*if (str.size() < 2) {
+			CallRuntimeError("RE: Wrong string size."); //
+		}*/
+		str = str.substr(1, str.size() - 2);
+	}
+	
+	virtual std::string execute(ExecuteTag) {
+		return str;
+	}
+	
+	void execute() override {
+		execute(ExecuteTag());
 	}
 };
 
 class CallFuncNode : public ExprNode {
 protected:
-	std::vector<std::unique_ptr<Node>> args;
+	std::vector<Node*> args;
 	FuncType id;
 public:
-	CallFuncNode(FuncType id,
-			std::vector<std::unique_ptr<Node>>&& args)
-			: id(id), args(std::move(args)) {}
+	CallFuncNode(FuncType id, const std::vector<Node*>& args)
+			: id(id), args(args) {}
+ 	
  	T execute(ExecuteTag) override {
- 		throw RuntimeError{"RE: Void function in expression"};
+ 		CallRuntimeError("RE: Void function in expression");
+ 		return 0;
  	} 
-	void execute() override {
-		switch (id) {
-		default:
-			break;
+	
+	void execute() override;
+
+	~CallFuncNode() {
+		for (size_t i = 0; i < args.size(); ++i) {
+			delete args[i];
 		}
-		//
 	}
 };
 
 class CallTFuncNode : public CallFuncNode {
 public:
-	CallTFuncNode(FuncType id,
-			std::vector<std::unique_ptr<Node>>&& args) 
-			: CallFuncNode(id, std::move(args)) {};
+	CallTFuncNode(FuncType id, const std::vector<Node*>& args) 
+			: CallFuncNode(id, args) {};
+
 	T execute(ExecuteTag) override {
+		size_t ans = 0;
 		switch (id) {
-		default:
-			break;
+			case FuncType::SCAN:
+				std::cin >> ans;
+				break;
+			default:
+				CallRuntimeError("RE: Unrecognized or void function used in expression.");
+				break;
 		}
-		//
-		return T();
+		return ans;
 	} 
+
 	void execute() override {
 		execute(ExecuteTag());
 	}
@@ -272,29 +265,35 @@ public:
 
 class BlockNode : public Node {
 protected:
-	std::vector<std::unique_ptr<Node>> nodes;
+	std::vector<Node*> nodes;
 public:
-	BlockNode(std::vector<std::unique_ptr<Node>>&& nodes) 
-			: nodes(std::move(nodes)) {}
+	BlockNode(const std::vector<Node*>& nodes) : nodes(nodes) {}
+	
 	void execute() override {
 		for (size_t i = 0; i < nodes.size(); ++i) {
 			nodes[i]->execute();
-		} 
+		}
+	}
+
+	~BlockNode() {
+		for (size_t i = 0; i < nodes.size(); ++i) {
+			delete nodes[i];
+		}
 	}
 };
 
 class ConditionNode : public Node {
 protected:
-	std::unique_ptr<LogicalExprNode> condition;
-	std::unique_ptr<Node> thenBlock;
-	std::unique_ptr<Node> elseBlock;
+	LogicalExprNode* condition;
+	Node* thenBlock;
+	Node* elseBlock;
 public:
-	ConditionNode(std::unique_ptr<LogicalExprNode>&& condition,
-			std::unique_ptr<Node>&& thenBlock,
-			std::unique_ptr<Node>&& elseBlock) 
-			: condition(std::move(condition)),
-				thenBlock(std::move(thenBlock)),
-				elseBlock(std::move(elseBlock)) {}
+	ConditionNode(LogicalExprNode* condition,
+			Node* thenBlock, Node* elseBlock) 
+			: condition(condition),
+				thenBlock(thenBlock),
+				elseBlock(elseBlock) {}
+	
 	void execute() override {
 		if (condition->execute(ExecuteTag())) {
 			thenBlock->execute();
@@ -302,21 +301,31 @@ public:
 			elseBlock->execute();
 		}
 	}
+	
+	~ConditionNode() {
+		delete condition;
+		delete thenBlock;
+		delete elseBlock;
+	}
 };
 
 class LoopNode : public Node {
 protected:
-	std::unique_ptr<LogicalExprNode> condition;
-	std::unique_ptr<Node> doBlock;
+	LogicalExprNode* condition;
+	Node* doBlock;
 public:
-	LoopNode (std::unique_ptr<LogicalExprNode>&& condition,
-			std::unique_ptr<Node>&& doBlock) 
-			: condition(std::move(condition)), 
-				doBlock(std::move(doBlock)) {}
+	LoopNode (LogicalExprNode* condition, Node* doBlock) 
+			: condition(condition), doBlock(doBlock) {}
+	
 	void execute() override {
 		while(condition->execute(ExecuteTag())) {
 			doBlock->execute();
 		} 
+	}
+	
+	~LoopNode() {
+		delete condition;
+		delete doBlock;
 	}
 };
 
@@ -324,11 +333,12 @@ class CreateVarNode : public Node {
 private:
 	std::string id;
 	std::vector<std::string> tags;
+	Storage* storage;
 public:
 	CreateVarNode(const std::string& id,
-			const std::vector<std::string>& tags) 
-			: id(id), tags(tags) {}
-	void execute() override {
-		//
-	}
+			const std::vector<std::string>& tags,
+			Storage* storage) 
+			: id(id), tags(tags), storage(storage) {}
+	
+	void execute() override;
 };

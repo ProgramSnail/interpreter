@@ -2,8 +2,6 @@ project(InterpreterProj)
 
 cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_CXX_STANDARD 17)
-
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
@@ -11,14 +9,14 @@ set(
     HEADERS
     ${InterpreterProj_SOURCE_DIR}/driver.hh
     ${InterpreterProj_SOURCE_DIR}/parser.hh
-    ${InterpreterProj_SOURCE_DIR}/parse_tree.hh
+    parse_tree.hh
     )
 
 BISON_TARGET(
     MyParser
     parser.y
     ${InterpreterProj_SOURCE_DIR}/parser.cpp
-    COMPILE_FLAGS --graph
+    COMPILE_FLAGS "--graph -Wcex -Werror"
     DEFINES_FILE ${InterpreterProj_SOURCE_DIR}/parser.hh
 )
 
