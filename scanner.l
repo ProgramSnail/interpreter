@@ -35,10 +35,11 @@ id    [a-zA-Z][a-zA-Z_0-9]*
 int   [0-9]+
 blank [ \t\r]
 
-tag #[a-zA-Z_0-9]+
+singleline_comment (\/\/.*\n)
+multiline_comment (\/\*[^\*\/]*\*\/)
+tag   #[a-zA-Z_0-9]+
 value $[a-zA-Z_0-9]+
-ch '[^\"'\\]|(\\["'0n\\])'
-str \"{ch}*\"
+ch    ([^\\\"\']|(\\[\\\"\'0ntr]))
 
 
 %{
@@ -52,26 +53,30 @@ str \"{ch}*\"
 %{
   // A handy shortcut to the location held by the driver.
   yy::location& loc = driver.location;
-  if (driver.location_debug) {
+  /*if (driver.location_debug) {
   // Code run each time yylex is called.
     std::cerr << "BEFORE " << loc << std::endl;
-  }
+  }*/
   // loc.step();
-  if (driver.location_debug) {
+  /*if (driver.location_debug) {
     std::cerr << "AFTER " <<  loc << std::endl;
-  }
+  }*/
 %}
 
+{singleline_comment} {}
+
+{multiline_comment} {}
+
 {blank}+   {
-    if (driver.location_debug) {
+    /*if (driver.location_debug) {
         std::cerr << "Blank matched" << std::endl;
-    }
+    }*/
     // loc.step();
 }
 \n+ {
-    if (driver.location_debug) {
+    /*if (driver.location_debug) {
         std::cerr << "EOL called" << std::endl;
-    }
+    }*/
     loc.lines(yyleng);
     loc.step();
 }
@@ -86,12 +91,14 @@ str \"{ch}*\"
 
 ","        return yy::parser::make_COMMA(loc);
 
-"=="       return yy::parser::make_EQUAL();
-"!="       return yy::parser::make_NOT_EQUAL();
+"=="       return yy::parser::make_EQUAL(loc);
+"!="       return yy::parser::make_NOT_EQUAL(loc);
+"<"        return yy::parser::make_LESS(loc);
+">"        return yy::parser::make_GREATHER(loc);
 
-"!"        return yy::parser::make_NOT();
-"&"        return yy::parser::make_AND();
-"|"        return yy::parser::make_OR();
+"!"        return yy::parser::make_NOT(loc);
+"&"        return yy::parser::make_AND(loc);
+"|"        return yy::parser::make_OR(loc);
 
 "("        return yy::parser::make_LPAREN(loc);
 ")"        return yy::parser::make_RPAREN(loc);
@@ -112,7 +119,6 @@ str \"{ch}*\"
                 }
                 return yy::parser::make_IDENTIFIER(yytext, loc);
            }
-{tag}      return yy::parser::make_TAG(yytext, value);
 {value}    {
                 if (strcmp(yytext, "$true")) {
                     return yy::parser::make_LOGICAL_CONSTANT(true, loc);
@@ -122,8 +128,11 @@ str \"{ch}*\"
                     return yy::parser::make_VALUE(yytext, loc);
                 }
            }
-{ch}       return yy::parser::make_CHARACTER(yytext, loc);
-{str}      return yy::parser::MAKE_STRING(yytext, loc);
+
+{tag}      return yy::parser::make_TAG(yytext, loc);
+\'{ch}\'   return yy::parser::make_CHARACTER(yytext, loc);
+\"{ch}*\"  return yy::parser::make_STRING(yytext, loc);
+
 .          {
                 throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
            }

@@ -48,11 +48,15 @@
 #line 9 "parser.y"
 
     #include <string>
+    #include <memory>
+    #include <vector>
     /* Forward declaration of classes in order to disable cyclic dependencies */
     class Scanner;
     class Driver;
 
-#line 56 "/home/snail/Code/FormalLang/interpreter/parser.hh"
+    #include "parse_tree.hh"
+
+#line 60 "/home/snail/Code/FormalLang/interpreter/parser.hh"
 
 # include <cassert>
 # include <cstdlib> // std::abort
@@ -192,7 +196,7 @@
 #endif
 
 namespace yy {
-#line 196 "/home/snail/Code/FormalLang/interpreter/parser.hh"
+#line 200 "/home/snail/Code/FormalLang/interpreter/parser.hh"
 
 
 
@@ -411,12 +415,56 @@ namespace yy {
     /// An auxiliary type to compute the largest semantic type.
     union union_type
     {
+      // assignment
+      char dummy1[sizeof (AssignmentNode*)];
+
+      // program
+      // block
+      char dummy2[sizeof (BlockNode*)];
+
+      // call_func
+      char dummy3[sizeof (CallFuncNode*)];
+
+      // condition
+      char dummy4[sizeof (ConditionNode*)];
+
+      // create_var
+      char dummy5[sizeof (CreateVarNode*)];
+
+      // expr
+      char dummy6[sizeof (ExprNode*)];
+
+      // logical_expr
+      char dummy7[sizeof (LogicalExprNode*)];
+
+      // loop
+      char dummy8[sizeof (LoopNode*)];
+
+      // statement
+      // any_arg
+      char dummy9[sizeof (Node*)];
+
+      // "logical_constant"
+      char dummy10[sizeof (bool)];
+
       // "number"
-      // exp
-      char dummy1[sizeof (int)];
+      char dummy11[sizeof (int)];
 
       // "identifier"
-      char dummy2[sizeof (std::string)];
+      // "tag"
+      // "value"
+      // "string"
+      // "character"
+      char dummy12[sizeof (std::string)];
+
+      // external_statements
+      // statements
+      // args_or_none
+      // args
+      char dummy13[sizeof (std::vector<Node*>)];
+
+      // tags
+      char dummy14[sizeof (std::vector<std::string>)];
     };
 
     /// The size of the largest semantic type.
@@ -469,16 +517,37 @@ namespace yy {
     TOK_END = 0,                   // "end of file"
     TOK_YYerror = 256,             // error
     TOK_YYUNDEF = 257,             // "invalid token"
-    TOK_ASSIGN = 258,              // ":="
+    TOK_ASSIGN = 258,              // "="
     TOK_MINUS = 259,               // "-"
     TOK_PLUS = 260,                // "+"
     TOK_STAR = 261,                // "*"
     TOK_SLASH = 262,               // "/"
-    TOK_LPAREN = 263,              // "("
-    TOK_RPAREN = 264,              // ")"
-    TOK_SEMICOLON = 265,           // ";"
-    TOK_IDENTIFIER = 266,          // "identifier"
-    TOK_NUMBER = 267               // "number"
+    TOK_MOD = 263,                 // "%"
+    TOK_COMMA = 264,               // ","
+    TOK_EQUAL = 265,               // "=="
+    TOK_NOT_EQUAL = 266,           // "!="
+    TOK_LESS = 267,                // "<"
+    TOK_GREATHER = 268,            // ">"
+    TOK_NOT = 269,                 // "!"
+    TOK_AND = 270,                 // "&"
+    TOK_OR = 271,                  // "|"
+    TOK_LPAREN = 272,              // "("
+    TOK_RPAREN = 273,              // ")"
+    TOK_RBRACKET = 274,            // "["
+    TOK_LBRACKET = 275,            // "]"
+    TOK_LBLOCK = 276,              // "{"
+    TOK_RBLOCK = 277,              // "}"
+    TOK_COLON = 278,               // ":"
+    TOK_SEMICOLON = 279,           // ";"
+    TOK_CONDITION = 280,           // "?"
+    TOK_LOOP = 281,                // "@"
+    TOK_IDENTIFIER = 282,          // "identifier"
+    TOK_TAG = 283,                 // "tag"
+    TOK_VALUE = 284,               // "value"
+    TOK_STRING = 285,              // "string"
+    TOK_CHARACTER = 286,           // "character"
+    TOK_NUMBER = 287,              // "number"
+    TOK_LOGICAL_CONSTANT = 288     // "logical_constant"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -495,26 +564,60 @@ namespace yy {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 13, ///< Number of tokens.
+        YYNTOKENS = 35, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
         S_YYUNDEF = 2,                           // "invalid token"
-        S_ASSIGN = 3,                            // ":="
+        S_ASSIGN = 3,                            // "="
         S_MINUS = 4,                             // "-"
         S_PLUS = 5,                              // "+"
         S_STAR = 6,                              // "*"
         S_SLASH = 7,                             // "/"
-        S_LPAREN = 8,                            // "("
-        S_RPAREN = 9,                            // ")"
-        S_SEMICOLON = 10,                        // ";"
-        S_IDENTIFIER = 11,                       // "identifier"
-        S_NUMBER = 12,                           // "number"
-        S_YYACCEPT = 13,                         // $accept
-        S_unit = 14,                             // unit
-        S_assignments = 15,                      // assignments
-        S_assignment = 16,                       // assignment
-        S_exp = 17                               // exp
+        S_MOD = 8,                               // "%"
+        S_COMMA = 9,                             // ","
+        S_EQUAL = 10,                            // "=="
+        S_NOT_EQUAL = 11,                        // "!="
+        S_LESS = 12,                             // "<"
+        S_GREATHER = 13,                         // ">"
+        S_NOT = 14,                              // "!"
+        S_AND = 15,                              // "&"
+        S_OR = 16,                               // "|"
+        S_LPAREN = 17,                           // "("
+        S_RPAREN = 18,                           // ")"
+        S_RBRACKET = 19,                         // "["
+        S_LBRACKET = 20,                         // "]"
+        S_LBLOCK = 21,                           // "{"
+        S_RBLOCK = 22,                           // "}"
+        S_COLON = 23,                            // ":"
+        S_SEMICOLON = 24,                        // ";"
+        S_CONDITION = 25,                        // "?"
+        S_LOOP = 26,                             // "@"
+        S_IDENTIFIER = 27,                       // "identifier"
+        S_TAG = 28,                              // "tag"
+        S_VALUE = 29,                            // "value"
+        S_STRING = 30,                           // "string"
+        S_CHARACTER = 31,                        // "character"
+        S_NUMBER = 32,                           // "number"
+        S_LOGICAL_CONSTANT = 33,                 // "logical_constant"
+        S_34_ = 34,                              // "^"
+        S_YYACCEPT = 35,                         // $accept
+        S_program = 36,                          // program
+        S_block = 37,                            // block
+        S_external_statements = 38,              // external_statements
+        S_statements = 39,                       // statements
+        S_statement = 40,                        // statement
+        S_create_var = 41,                       // create_var
+        S_call_func = 42,                        // call_func
+        S_args_or_none = 43,                     // args_or_none
+        S_args = 44,                             // args
+        S_any_arg = 45,                          // any_arg
+        S_tags = 46,                             // tags
+        S_assignment = 47,                       // assignment
+        S_loop = 48,                             // loop
+        S_condition = 49,                        // condition
+        S_expr = 50,                             // expr
+        S_logical_expr = 51                      // logical_expr
       };
     };
 
@@ -551,13 +654,69 @@ namespace yy {
       {
         switch (this->kind ())
     {
+      case symbol_kind::S_assignment: // assignment
+        value.move< AssignmentNode* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_program: // program
+      case symbol_kind::S_block: // block
+        value.move< BlockNode* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+        value.move< CallFuncNode* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_condition: // condition
+        value.move< ConditionNode* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+        value.move< CreateVarNode* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_expr: // expr
+        value.move< ExprNode* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+        value.move< LogicalExprNode* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_loop: // loop
+        value.move< LoopNode* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_statement: // statement
+      case symbol_kind::S_any_arg: // any_arg
+        value.move< Node* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+        value.move< bool > (std::move (that.value));
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
-      case symbol_kind::S_exp: // exp
         value.move< int > (std::move (that.value));
         break;
 
       case symbol_kind::S_IDENTIFIER: // "identifier"
+      case symbol_kind::S_TAG: // "tag"
+      case symbol_kind::S_VALUE: // "value"
+      case symbol_kind::S_STRING: // "string"
+      case symbol_kind::S_CHARACTER: // "character"
         value.move< std::string > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_external_statements: // external_statements
+      case symbol_kind::S_statements: // statements
+      case symbol_kind::S_args_or_none: // args_or_none
+      case symbol_kind::S_args: // args
+        value.move< std::vector<Node*> > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_tags: // tags
+        value.move< std::vector<std::string> > (std::move (that.value));
         break;
 
       default:
@@ -579,6 +738,146 @@ namespace yy {
 #else
       basic_symbol (typename Base::kind_type t, const location_type& l)
         : Base (t)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, AssignmentNode*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const AssignmentNode*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, BlockNode*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const BlockNode*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, CallFuncNode*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const CallFuncNode*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, ConditionNode*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const ConditionNode*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, CreateVarNode*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const CreateVarNode*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, ExprNode*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const ExprNode*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, LogicalExprNode*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const LogicalExprNode*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, LoopNode*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const LoopNode*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, Node*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const Node*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, bool&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const bool& v, const location_type& l)
+        : Base (t)
+        , value (v)
         , location (l)
       {}
 #endif
@@ -611,6 +910,34 @@ namespace yy {
       {}
 #endif
 
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<Node*>&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<Node*>& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::vector<std::string>&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::vector<std::string>& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
       /// Destroy the symbol.
       ~basic_symbol ()
       {
@@ -635,13 +962,69 @@ namespace yy {
         // Value type destructor.
 switch (yykind)
     {
+      case symbol_kind::S_assignment: // assignment
+        value.template destroy< AssignmentNode* > ();
+        break;
+
+      case symbol_kind::S_program: // program
+      case symbol_kind::S_block: // block
+        value.template destroy< BlockNode* > ();
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+        value.template destroy< CallFuncNode* > ();
+        break;
+
+      case symbol_kind::S_condition: // condition
+        value.template destroy< ConditionNode* > ();
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+        value.template destroy< CreateVarNode* > ();
+        break;
+
+      case symbol_kind::S_expr: // expr
+        value.template destroy< ExprNode* > ();
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+        value.template destroy< LogicalExprNode* > ();
+        break;
+
+      case symbol_kind::S_loop: // loop
+        value.template destroy< LoopNode* > ();
+        break;
+
+      case symbol_kind::S_statement: // statement
+      case symbol_kind::S_any_arg: // any_arg
+        value.template destroy< Node* > ();
+        break;
+
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+        value.template destroy< bool > ();
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
-      case symbol_kind::S_exp: // exp
         value.template destroy< int > ();
         break;
 
       case symbol_kind::S_IDENTIFIER: // "identifier"
+      case symbol_kind::S_TAG: // "tag"
+      case symbol_kind::S_VALUE: // "value"
+      case symbol_kind::S_STRING: // "string"
+      case symbol_kind::S_CHARACTER: // "character"
         value.template destroy< std::string > ();
+        break;
+
+      case symbol_kind::S_external_statements: // external_statements
+      case symbol_kind::S_statements: // statements
+      case symbol_kind::S_args_or_none: // args_or_none
+      case symbol_kind::S_args: // args
+        value.template destroy< std::vector<Node*> > ();
+        break;
+
+      case symbol_kind::S_tags: // tags
+        value.template destroy< std::vector<std::string> > ();
         break;
 
       default:
@@ -742,7 +1125,20 @@ switch (yykind)
       {
 #if !defined _MSC_VER || defined __clang__
         YY_ASSERT (tok == token::TOK_END
-                   || (token::TOK_YYerror <= tok && tok <= token::TOK_SEMICOLON));
+                   || (token::TOK_YYerror <= tok && tok <= token::TOK_LOOP)
+                   || tok == 289);
+#endif
+      }
+#if 201103L <= YY_CPLUSPLUS
+      symbol_type (int tok, bool v, location_type l)
+        : super_type (token_kind_type (tok), std::move (v), std::move (l))
+#else
+      symbol_type (int tok, const bool& v, const location_type& l)
+        : super_type (token_kind_type (tok), v, l)
+#endif
+      {
+#if !defined _MSC_VER || defined __clang__
+        YY_ASSERT (tok == token::TOK_LOGICAL_CONSTANT);
 #endif
       }
 #if 201103L <= YY_CPLUSPLUS
@@ -766,7 +1162,7 @@ switch (yykind)
 #endif
       {
 #if !defined _MSC_VER || defined __clang__
-        YY_ASSERT (tok == token::TOK_IDENTIFIER);
+        YY_ASSERT ((token::TOK_IDENTIFIER <= tok && tok <= token::TOK_CHARACTER));
 #endif
       }
     };
@@ -940,6 +1336,141 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_MOD (location_type l)
+      {
+        return symbol_type (token::TOK_MOD, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_MOD (const location_type& l)
+      {
+        return symbol_type (token::TOK_MOD, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_COMMA (location_type l)
+      {
+        return symbol_type (token::TOK_COMMA, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_COMMA (const location_type& l)
+      {
+        return symbol_type (token::TOK_COMMA, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_EQUAL (location_type l)
+      {
+        return symbol_type (token::TOK_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::TOK_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_NOT_EQUAL (location_type l)
+      {
+        return symbol_type (token::TOK_NOT_EQUAL, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_NOT_EQUAL (const location_type& l)
+      {
+        return symbol_type (token::TOK_NOT_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LESS (location_type l)
+      {
+        return symbol_type (token::TOK_LESS, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LESS (const location_type& l)
+      {
+        return symbol_type (token::TOK_LESS, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_GREATHER (location_type l)
+      {
+        return symbol_type (token::TOK_GREATHER, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_GREATHER (const location_type& l)
+      {
+        return symbol_type (token::TOK_GREATHER, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_NOT (location_type l)
+      {
+        return symbol_type (token::TOK_NOT, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_NOT (const location_type& l)
+      {
+        return symbol_type (token::TOK_NOT, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_AND (location_type l)
+      {
+        return symbol_type (token::TOK_AND, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_AND (const location_type& l)
+      {
+        return symbol_type (token::TOK_AND, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_OR (location_type l)
+      {
+        return symbol_type (token::TOK_OR, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_OR (const location_type& l)
+      {
+        return symbol_type (token::TOK_OR, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_LPAREN (location_type l)
       {
         return symbol_type (token::TOK_LPAREN, std::move (l));
@@ -970,6 +1501,81 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_RBRACKET (location_type l)
+      {
+        return symbol_type (token::TOK_RBRACKET, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_RBRACKET (const location_type& l)
+      {
+        return symbol_type (token::TOK_RBRACKET, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LBRACKET (location_type l)
+      {
+        return symbol_type (token::TOK_LBRACKET, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LBRACKET (const location_type& l)
+      {
+        return symbol_type (token::TOK_LBRACKET, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LBLOCK (location_type l)
+      {
+        return symbol_type (token::TOK_LBLOCK, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LBLOCK (const location_type& l)
+      {
+        return symbol_type (token::TOK_LBLOCK, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_RBLOCK (location_type l)
+      {
+        return symbol_type (token::TOK_RBLOCK, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_RBLOCK (const location_type& l)
+      {
+        return symbol_type (token::TOK_RBLOCK, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_COLON (location_type l)
+      {
+        return symbol_type (token::TOK_COLON, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_COLON (const location_type& l)
+      {
+        return symbol_type (token::TOK_COLON, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_SEMICOLON (location_type l)
       {
         return symbol_type (token::TOK_SEMICOLON, std::move (l));
@@ -980,6 +1586,36 @@ switch (yykind)
       make_SEMICOLON (const location_type& l)
       {
         return symbol_type (token::TOK_SEMICOLON, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_CONDITION (location_type l)
+      {
+        return symbol_type (token::TOK_CONDITION, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_CONDITION (const location_type& l)
+      {
+        return symbol_type (token::TOK_CONDITION, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LOOP (location_type l)
+      {
+        return symbol_type (token::TOK_LOOP, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LOOP (const location_type& l)
+      {
+        return symbol_type (token::TOK_LOOP, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1000,6 +1636,66 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_TAG (std::string v, location_type l)
+      {
+        return symbol_type (token::TOK_TAG, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_TAG (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::TOK_TAG, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_VALUE (std::string v, location_type l)
+      {
+        return symbol_type (token::TOK_VALUE, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_VALUE (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::TOK_VALUE, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_STRING (std::string v, location_type l)
+      {
+        return symbol_type (token::TOK_STRING, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_STRING (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::TOK_STRING, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_CHARACTER (std::string v, location_type l)
+      {
+        return symbol_type (token::TOK_CHARACTER, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_CHARACTER (const std::string& v, const location_type& l)
+      {
+        return symbol_type (token::TOK_CHARACTER, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_NUMBER (int v, location_type l)
       {
         return symbol_type (token::TOK_NUMBER, std::move (v), std::move (l));
@@ -1010,6 +1706,21 @@ switch (yykind)
       make_NUMBER (const int& v, const location_type& l)
       {
         return symbol_type (token::TOK_NUMBER, v, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LOGICAL_CONSTANT (bool v, location_type l)
+      {
+        return symbol_type (token::TOK_LOGICAL_CONSTANT, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LOGICAL_CONSTANT (const bool& v, const location_type& l)
+      {
+        return symbol_type (token::TOK_LOGICAL_CONSTANT, v, l);
       }
 #endif
 
@@ -1115,7 +1826,7 @@ switch (yykind)
 
 #if YYDEBUG
     // YYRLINE[YYN] -- Source line where rule number YYN was defined.
-    static const signed char yyrline_[];
+    static const short yyrline_[];
     /// Report on the debug stream that the rule \a r is going to be reduced.
     virtual void yy_reduce_print_ (int r) const;
     /// Print the state stack on the debug stream.
@@ -1342,8 +2053,8 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 35,     ///< Last index in yytable_.
-      yynnts_ = 5,  ///< Number of nonterminal symbols.
+      yylast_ = 133,     ///< Last index in yytable_.
+      yynnts_ = 17,  ///< Number of nonterminal symbols.
       yyfinal_ = 3 ///< Termination state number.
     };
 
@@ -1390,10 +2101,12 @@ switch (yykind)
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,     9,    10,    11,    12
+       5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
+      15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
+      25,    26,    27,    28,    29,    30,    31,    32,    33,    34
     };
     // Last valid token kind.
-    const int code_max = 267;
+    const int code_max = 289;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -1412,13 +2125,69 @@ switch (yykind)
   {
     switch (this->kind ())
     {
+      case symbol_kind::S_assignment: // assignment
+        value.copy< AssignmentNode* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_program: // program
+      case symbol_kind::S_block: // block
+        value.copy< BlockNode* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+        value.copy< CallFuncNode* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_condition: // condition
+        value.copy< ConditionNode* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+        value.copy< CreateVarNode* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_expr: // expr
+        value.copy< ExprNode* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+        value.copy< LogicalExprNode* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_loop: // loop
+        value.copy< LoopNode* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_statement: // statement
+      case symbol_kind::S_any_arg: // any_arg
+        value.copy< Node* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+        value.copy< bool > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
-      case symbol_kind::S_exp: // exp
         value.copy< int > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_IDENTIFIER: // "identifier"
+      case symbol_kind::S_TAG: // "tag"
+      case symbol_kind::S_VALUE: // "value"
+      case symbol_kind::S_STRING: // "string"
+      case symbol_kind::S_CHARACTER: // "character"
         value.copy< std::string > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_external_statements: // external_statements
+      case symbol_kind::S_statements: // statements
+      case symbol_kind::S_args_or_none: // args_or_none
+      case symbol_kind::S_args: // args
+        value.copy< std::vector<Node*> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_tags: // tags
+        value.copy< std::vector<std::string> > (YY_MOVE (that.value));
         break;
 
       default:
@@ -1452,13 +2221,69 @@ switch (yykind)
     super_type::move (s);
     switch (this->kind ())
     {
+      case symbol_kind::S_assignment: // assignment
+        value.move< AssignmentNode* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_program: // program
+      case symbol_kind::S_block: // block
+        value.move< BlockNode* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+        value.move< CallFuncNode* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_condition: // condition
+        value.move< ConditionNode* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+        value.move< CreateVarNode* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_expr: // expr
+        value.move< ExprNode* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+        value.move< LogicalExprNode* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_loop: // loop
+        value.move< LoopNode* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_statement: // statement
+      case symbol_kind::S_any_arg: // any_arg
+        value.move< Node* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+        value.move< bool > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
-      case symbol_kind::S_exp: // exp
         value.move< int > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_IDENTIFIER: // "identifier"
+      case symbol_kind::S_TAG: // "tag"
+      case symbol_kind::S_VALUE: // "value"
+      case symbol_kind::S_STRING: // "string"
+      case symbol_kind::S_CHARACTER: // "character"
         value.move< std::string > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_external_statements: // external_statements
+      case symbol_kind::S_statements: // statements
+      case symbol_kind::S_args_or_none: // args_or_none
+      case symbol_kind::S_args: // args
+        value.move< std::vector<Node*> > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_tags: // tags
+        value.move< std::vector<std::string> > (YY_MOVE (s.value));
         break;
 
       default:
@@ -1527,7 +2352,7 @@ switch (yykind)
 
 
 } // yy
-#line 1531 "/home/snail/Code/FormalLang/interpreter/parser.hh"
+#line 2356 "/home/snail/Code/FormalLang/interpreter/parser.hh"
 
 
 

@@ -1,4 +1,4 @@
-project(Interpreter)
+project(InterpreterProj)
 
 cmake_minimum_required(VERSION 3.13)
 
@@ -7,23 +7,23 @@ find_package(FLEX REQUIRED)
 
 set(
     HEADERS
-    ${Interpreter_SOURCE_DIR}/driver.hh
-    ${Interpreter_SOURCE_DIR}/parser.hh
-    ${Interpreter_SOURCE_DIR}/parse_tree.hh
+    ${InterpreterProj_SOURCE_DIR}/driver.hh
+    ${InterpreterProj_SOURCE_DIR}/parser.hh
+    parse_tree.hh
     )
 
 BISON_TARGET(
     MyParser
     parser.y
-    ${Interpreter_SOURCE_DIR}/parser.cpp
-    COMPILE_FLAGS --graph
-    DEFINES_FILE ${Interpreter_SOURCE_DIR}/parser.hh
+    ${InterpreterProj_SOURCE_DIR}/parser.cpp
+    COMPILE_FLAGS "--graph -Wcex -Werror"
+    DEFINES_FILE ${InterpreterProj_SOURCE_DIR}/parser.hh
 )
 
 FLEX_TARGET(
     MyScanner
     scanner.l
-    ${Interpreter_SOURCE_DIR}/scanner.cpp
+    ${InterpreterProj_SOURCE_DIR}/scanner.cpp
 )
 
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
@@ -36,7 +36,8 @@ add_executable(
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
-target_include_directories(Interpereter PRIVATE ${Interpreter_SOURCE_DIR})
+
+target_include_directories(Interpreter PRIVATE ${InterpreterProj_SOURCE_DIR})
 
 
 

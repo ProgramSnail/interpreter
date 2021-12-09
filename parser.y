@@ -8,24 +8,13 @@
 
 %code requires {
     #include <string>
+    #include <memory>
+    #include <vector>
     /* Forward declaration of classes in order to disable cyclic dependencies */
     class Scanner;
     class Driver;
 
-    class Node;
-    class RootNode;
-    class ExprNode;
-    class NumberExprNode;
-    class VarExprNode;
-    class LogicalExprNode;
-    class ComparasionNode;
-    class LogicalConstantNode;
-    class AssignmentNode;
-    class CallFuncNode;
-    class CallTFuncNode;
-    class BlockNode;
-    class ConditionNode;
-    class LoopNode;
+    #include "parse_tree.hh"
 }
 
 
@@ -35,7 +24,6 @@
 %code {
     #include "driver.hh"
     #include "location.hh"
-    #include "parse_tree.hh"
 
     /* Redefine parser to use our function from scanner */
     static yy::parser::symbol_type yylex(Scanner &scanner) {
@@ -66,6 +54,8 @@
 
     EQUAL "=="
     NOT_EQUAL "!="
+    LESS "<"
+    GREATHER ">"
 
     NOT "!"
     AND "&"
@@ -92,19 +82,25 @@
 %token <int> NUMBER "number"
 %token <bool> LOGICAL_CONSTANT "logical_constant"
 
-%nterm <std::vector<std::unique_ptr<Node>>> statements
-%nterm <std::unique_ptr<Node>> statement
-%nterm <std::unique_ptr<CallFuncNode>> call_func
-%nterm <std::vector<std::unique_ptr<Node>>> args
-
+%nterm <BlockNode*> program
+%nterm <BlockNode*> block
+%nterm <std::vector<Node*>> external_statements
+%nterm <std::vector<Node*>> statements
+%nterm <Node*> statement
+%nterm <CreateVarNode*> create_var
+%nterm <CallFuncNode*> call_func
+%nterm <std::vector<Node*>> args_or_none
+%nterm <std::vector<Node*>> args
+%nterm <Node*> any_arg
+%nterm <LoopNode*> loop
+%nterm <ConditionNode*> condition
 %nterm <std::vector<std::string>> tags
-%nterm <std::unique_ptr<Node>> any_expr
-%nterm <std::unique_ptr<AssignmentNode>> assignment
-%nterm <std::unique_ptr<LogicalExprNode>> logical_expr
-%nterm <std::unique_ptr<ExprNode>> expr
+%nterm <AssignmentNode*> assignment
+%nterm <LogicalExprNode*> logical_expr
+%nterm <ExprNode*> expr
 
 // Prints output in parsing option for debugging location terminal
-%printer { yyo << $$; } <*>;
+%printer { /*yyo << $$;*/ } <*>;
 
 %%
 %left "+" "-";
@@ -112,65 +108,108 @@
 
 %left "!";
 %left "&" "|" "^";
+%left "==" "!=" "<" ">";
+%left "=";
 
-%start statements;
-statements:
-    %empty {
-        //$$ = vector<std::unique_ptr<Node>>();
+%start program;
+program:
+    external_statements {
+        $$ = new BlockNode($1);
+        $$->execute();
+    };
+
+block:
+    "{" statements "}" {
+        $$ = new BlockNode($2);
+    };
+
+external_statements:
+    %empty {}
+    | external_statements statement {
+        $$ = $1;
+        $$.push_back($2);
     }
+    | external_statements create_var ";" {
+        $$ = $1;
+        $$.push_back($2);
+    };
+
+statements:
+    %empty {}
     | statements statement {
-        $$ = std::move($1);
-        $$.push_back(std::move(make_unique($2)));
+        $$ = $1;
+        $$.push_back($2);
     };
 
 statement:
-    assignment ";" {
-        $$ = std::move($1);
+    call_func ";" {
+        $$ = $1;
     }
-    | call_func ";" {
-        $$ = std::move($1);
-    }
-    | create_var {
-        $$ = std::move($1);
+    | assignment ";" {
+        $$ = $1;
     }
     | loop {
-        $$ = std::move($1);
+        $$ = $1;
     }
     | condition {
-        $$ = std::move($1);
+        $$ = $1;
+    }
+    | block {
+        $$ = $1;
     };
 
 create_var: // todo: add initialization
     "identifier" ":" tags {
-        driver.variables[$1] = 0;
+        $$ = new CreateVarNode($1, $3, &(driver.storage));
     };
 
 call_func:
-    "identifier" "(" args ")" {
+    "identifier" "(" args_or_none ")" {
         FuncType id = FuncType::NONE;
+        if ($1 == "print") {
+            id = FuncType::PRINT;
+        } else if ($1 == "write") {
+            id = FuncType::WRITE;
+        } else if ($1 == "scan") {
+            id = FuncType::SCAN;
+        } else {
+            CallRuntimeError("RE: Unrecognized function name.");
+        }
         // choose func type from $1
-        $$ = make_unique<CallFuncNode>(id, $3);
+        if (id == FuncType::SCAN) {
+            $$ = new CallTFuncNode(id, $3);
+        } else {
+            $$ = new CallFuncNode(id, $3);
+        }
+    };
+
+args_or_none:
+    %empty {}
+    | args {
+        $$ = $1;
     };
 
 args:
-    %empty {
-        // $$ = vector<std::unique_ptr<Node>>()
+    any_arg {
+        $$.push_back($1);
     }
-    | args "," expr {
-        $$ = std::move($1);
-        $$.push_back(std::move($3));
+    | args "," any_arg {
+        $$ = $1;
+        $$.push_back($3);
     };
 
-any_expr:
+any_arg:
     expr {
-        $$ = std::move($1);
+        $$ = $1;
     }
-    | logical_expr {
-        $$ = std::move($1);
+    | "string" {
+        $$ = new StringNode($1);
     };
 
 tags:
-    "tag" { $$ = $1; }
+    "tag" { 
+        $$.push_back($1); 
+    }
     | "tag" tags { 
         $$ = $2;
         $$.push_back($1);
@@ -178,7 +217,7 @@ tags:
 
 assignment:
     "identifier" "=" expr {
-        $$ = std::make_unique<AssignmentNode>($1, $3);
+        $$ = new AssignmentNode($1, $3, &(driver.storage));
         /*if (driver.location_debug) {
             std::cerr << driver.location << std::endl;
         }*/
@@ -190,70 +229,81 @@ assignment:
 
 
 loop:
-    "@" "(" LOGICAL_EXPR ")" block {
-        $$ = make_unique<LoopNode>(std::move($3), std::move($5));
+    "@" "(" logical_expr ")" block {
+        $$ = new LoopNode($3, $5);
     };
 
 condition:
-    "?" "(" LOGICAL_EXPR ")" block {
-        $$ = make_unique();
+    "?" "(" logical_expr ")" block ":" block {
+        $$ = new ConditionNode($3, $5, $7);
     };
 
 expr:
     "number" { 
-        $$ = std::make_unique<NumberExprNode>($1); 
+        $$ = new NumberExprNode($1); 
     }
     | "identifier" { 
-        $$ = std::make_unique<VarExprNode>($1);
+        $$ = new VarExprNode($1, &(driver.storage));
         /*driver.variables[$1];*/
     }
     | call_func {
-        $$ = std::move($1);
+        $$ = $1;
     }
     | "-" expr {
-        $$ = std::make_unique<ExprNode>($2, nullptr, Operator::NEGATIVE);
+        $$ = new ExprNode($2, nullptr, Operator::NEGATIVE);
     }
     | expr "+" expr { 
-        $$ = std::make_unique<ExprNode>($1, $3, Operator::ADD); }
+        $$ = new ExprNode($1, $3, Operator::ADD); 
+    }
     | expr "-" expr { 
-        $$ = std::make_unique<ExprNode>($1, $3, Operator::SUB); }
+        $$ = new ExprNode($1, $3, Operator::SUB); 
+    }
     | expr "*" expr { 
-        $$ = std::make_unique<Expr_Node>($1, $3 Operator::MULT); }
+        $$ = new ExprNode($1, $3, Operator::MULT); 
+    }
     | expr "/" expr { 
-        $$ = std::make_unique<ExprNode>($1, $3 Operator::DIV); }
+        $$ = new ExprNode($1, $3, Operator::DIV); 
+    }
     | expr "%" expr { 
-        $$ = std::make_unique<ExprNode>($1, $3, Operator::MOD); } 
+        $$ = new ExprNode($1, $3, Operator::MOD); 
+    } 
     | "(" expr ")" { 
-        $$ = std::move($2); 
+        $$ = $2; 
     };
 
 logical_expr:
     "logical_constant" {
-        $$ = std::make_unique<LogicalConstantNode>($1);
+        $$ = new LogicalConstantNode($1);
     }
     | "!" logical_expr { 
-        $$ = std::make_unique<LogicalExprNode>($2, nullptr, LogicalOperator::NOT);
+        $$ = new LogicalExprNode($2, nullptr, LogicalOperator::NOT);
     }
     | logical_expr "&" logical_expr { 
-        $$ = std::make_unique<LogicalExprNode>($1, $3, LogicalOperator::AND);
+        $$ = new LogicalExprNode($1, $3, LogicalOperator::AND);
     }
     | logical_expr "|" logical_expr { 
-        $$ = std::make_unique<LogicalExprNode>($1, $3, LogicalOperator::OR); 
+        $$ = new LogicalExprNode($1, $3, LogicalOperator::OR); 
     }
     | logical_expr "==" logical_expr {
-        $$ = std::make_unique<LogicalExprNode>($1, $3, LogicalOperator::EQUAL); 
+        $$ = new LogicalExprNode($1, $3, LogicalOperator::EQUAL); 
     }
     | logical_expr "!=" logical_expr {
-        $$ = std::make_unique<LogicalExprNode>($1, $3, LogicalOperator::NOT_EQUAL); 
+        $$ = new LogicalExprNode($1, $3, LogicalOperator::NOT_EQUAL); 
     }
     | "(" logical_expr ")" { 
-        $$ = std::move($2); 
+        $$ = $2; 
     }
     | expr "==" expr {
-        $$ = std::make_unique<ComparasionNode>($1, $3, LogicalOperator::EQUAL); 
+        $$ = new ComparasionNode($1, $3, LogicalOperator::EQUAL); 
     }
     | expr "!=" expr {
-        $$ = std::make_unique<ComparasionNode>($1, $3, LogicalOperator::NOT_EQUAL); 
+        $$ = new ComparasionNode($1, $3, LogicalOperator::NOT_EQUAL); 
+    }
+    | expr "<" expr {
+        $$ = new ComparasionNode($1, $3, LogicalOperator::LESS);
+    }
+    | expr ">" expr {
+        $$ = new ComparasionNode($1, $3, LogicalOperator::GREATHER);
     };
 
 %%
