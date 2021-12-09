@@ -42,7 +42,7 @@
 
 
 // Unqualified %code blocks.
-#line 20 "parser.y"
+#line 40 "parser.y"
 
     #include "driver.hh"
     #include "location.hh"
@@ -213,13 +213,66 @@ namespace yy {
   {
     switch (that.kind ())
     {
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+        value.YY_MOVE_OR_COPY< bool > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
-      case symbol_kind::S_exp: // exp
         value.YY_MOVE_OR_COPY< int > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_IDENTIFIER: // "identifier"
+      case symbol_kind::S_TAG: // "tag"
+      case symbol_kind::S_VALUE: // "value"
+      case symbol_kind::S_STRING: // "string"
+      case symbol_kind::S_CHARACTER: // "character"
         value.YY_MOVE_OR_COPY< std::string > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_assignment: // assignment
+        value.YY_MOVE_OR_COPY< std::unique_ptr<AssignmentNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_program: // program
+      case symbol_kind::S_block: // block
+        value.YY_MOVE_OR_COPY< std::unique_ptr<BlockNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+        value.YY_MOVE_OR_COPY< std::unique_ptr<CallFuncNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_condition: // condition
+        value.YY_MOVE_OR_COPY< std::unique_ptr<ConditionNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+        value.YY_MOVE_OR_COPY< std::unique_ptr<CreateVarNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_expr: // expr
+        value.YY_MOVE_OR_COPY< std::unique_ptr<ExprNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+        value.YY_MOVE_OR_COPY< std::unique_ptr<LogicalExprNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_loop: // loop
+        value.YY_MOVE_OR_COPY< std::unique_ptr<LoopNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_statement: // statement
+        value.YY_MOVE_OR_COPY< std::unique_ptr<Node> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_tags: // tags
+        value.YY_MOVE_OR_COPY< std::vector<std::string> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_statements: // statements
+      case symbol_kind::S_args: // args
+        value.YY_MOVE_OR_COPY< std::vector<std::unique_ptr<Node>> > (YY_MOVE (that.value));
         break;
 
       default:
@@ -237,13 +290,66 @@ namespace yy {
   {
     switch (that.kind ())
     {
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+        value.move< bool > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
-      case symbol_kind::S_exp: // exp
         value.move< int > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_IDENTIFIER: // "identifier"
+      case symbol_kind::S_TAG: // "tag"
+      case symbol_kind::S_VALUE: // "value"
+      case symbol_kind::S_STRING: // "string"
+      case symbol_kind::S_CHARACTER: // "character"
         value.move< std::string > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_assignment: // assignment
+        value.move< std::unique_ptr<AssignmentNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_program: // program
+      case symbol_kind::S_block: // block
+        value.move< std::unique_ptr<BlockNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+        value.move< std::unique_ptr<CallFuncNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_condition: // condition
+        value.move< std::unique_ptr<ConditionNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+        value.move< std::unique_ptr<CreateVarNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_expr: // expr
+        value.move< std::unique_ptr<ExprNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+        value.move< std::unique_ptr<LogicalExprNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_loop: // loop
+        value.move< std::unique_ptr<LoopNode> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_statement: // statement
+        value.move< std::unique_ptr<Node> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_tags: // tags
+        value.move< std::vector<std::string> > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_statements: // statements
+      case symbol_kind::S_args: // args
+        value.move< std::vector<std::unique_ptr<Node>> > (YY_MOVE (that.value));
         break;
 
       default:
@@ -261,13 +367,66 @@ namespace yy {
     state = that.state;
     switch (that.kind ())
     {
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+        value.copy< bool > (that.value);
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
-      case symbol_kind::S_exp: // exp
         value.copy< int > (that.value);
         break;
 
       case symbol_kind::S_IDENTIFIER: // "identifier"
+      case symbol_kind::S_TAG: // "tag"
+      case symbol_kind::S_VALUE: // "value"
+      case symbol_kind::S_STRING: // "string"
+      case symbol_kind::S_CHARACTER: // "character"
         value.copy< std::string > (that.value);
+        break;
+
+      case symbol_kind::S_assignment: // assignment
+        value.copy< std::unique_ptr<AssignmentNode> > (that.value);
+        break;
+
+      case symbol_kind::S_program: // program
+      case symbol_kind::S_block: // block
+        value.copy< std::unique_ptr<BlockNode> > (that.value);
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+        value.copy< std::unique_ptr<CallFuncNode> > (that.value);
+        break;
+
+      case symbol_kind::S_condition: // condition
+        value.copy< std::unique_ptr<ConditionNode> > (that.value);
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+        value.copy< std::unique_ptr<CreateVarNode> > (that.value);
+        break;
+
+      case symbol_kind::S_expr: // expr
+        value.copy< std::unique_ptr<ExprNode> > (that.value);
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+        value.copy< std::unique_ptr<LogicalExprNode> > (that.value);
+        break;
+
+      case symbol_kind::S_loop: // loop
+        value.copy< std::unique_ptr<LoopNode> > (that.value);
+        break;
+
+      case symbol_kind::S_statement: // statement
+        value.copy< std::unique_ptr<Node> > (that.value);
+        break;
+
+      case symbol_kind::S_tags: // tags
+        value.copy< std::vector<std::string> > (that.value);
+        break;
+
+      case symbol_kind::S_statements: // statements
+      case symbol_kind::S_args: // args
+        value.copy< std::vector<std::unique_ptr<Node>> > (that.value);
         break;
 
       default:
@@ -284,13 +443,66 @@ namespace yy {
     state = that.state;
     switch (that.kind ())
     {
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+        value.move< bool > (that.value);
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
-      case symbol_kind::S_exp: // exp
         value.move< int > (that.value);
         break;
 
       case symbol_kind::S_IDENTIFIER: // "identifier"
+      case symbol_kind::S_TAG: // "tag"
+      case symbol_kind::S_VALUE: // "value"
+      case symbol_kind::S_STRING: // "string"
+      case symbol_kind::S_CHARACTER: // "character"
         value.move< std::string > (that.value);
+        break;
+
+      case symbol_kind::S_assignment: // assignment
+        value.move< std::unique_ptr<AssignmentNode> > (that.value);
+        break;
+
+      case symbol_kind::S_program: // program
+      case symbol_kind::S_block: // block
+        value.move< std::unique_ptr<BlockNode> > (that.value);
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+        value.move< std::unique_ptr<CallFuncNode> > (that.value);
+        break;
+
+      case symbol_kind::S_condition: // condition
+        value.move< std::unique_ptr<ConditionNode> > (that.value);
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+        value.move< std::unique_ptr<CreateVarNode> > (that.value);
+        break;
+
+      case symbol_kind::S_expr: // expr
+        value.move< std::unique_ptr<ExprNode> > (that.value);
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+        value.move< std::unique_ptr<LogicalExprNode> > (that.value);
+        break;
+
+      case symbol_kind::S_loop: // loop
+        value.move< std::unique_ptr<LoopNode> > (that.value);
+        break;
+
+      case symbol_kind::S_statement: // statement
+        value.move< std::unique_ptr<Node> > (that.value);
+        break;
+
+      case symbol_kind::S_tags: // tags
+        value.move< std::vector<std::string> > (that.value);
+        break;
+
+      case symbol_kind::S_statements: // statements
+      case symbol_kind::S_args: // args
+        value.move< std::vector<std::unique_ptr<Node>> > (that.value);
         break;
 
       default:
@@ -330,21 +542,123 @@ namespace yy {
         switch (yykind)
     {
       case symbol_kind::S_IDENTIFIER: // "identifier"
-#line 56 "parser.y"
+#line 115 "parser.y"
                  { yyo << yysym.value.template as < std::string > (); }
-#line 336 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 548 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_TAG: // "tag"
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::string > (); }
+#line 554 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_VALUE: // "value"
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::string > (); }
+#line 560 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_STRING: // "string"
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::string > (); }
+#line 566 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_CHARACTER: // "character"
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::string > (); }
+#line 572 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
         break;
 
       case symbol_kind::S_NUMBER: // "number"
-#line 56 "parser.y"
+#line 115 "parser.y"
                  { yyo << yysym.value.template as < int > (); }
-#line 342 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 578 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
         break;
 
-      case symbol_kind::S_exp: // exp
-#line 56 "parser.y"
-                 { yyo << yysym.value.template as < int > (); }
-#line 348 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < bool > (); }
+#line 584 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_program: // program
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<BlockNode> > (); }
+#line 590 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_block: // block
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<BlockNode> > (); }
+#line 596 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_statements: // statements
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::vector<std::unique_ptr<Node>> > (); }
+#line 602 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_statement: // statement
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<Node> > (); }
+#line 608 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<CreateVarNode> > (); }
+#line 614 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<CallFuncNode> > (); }
+#line 620 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_args: // args
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::vector<std::unique_ptr<Node>> > (); }
+#line 626 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_tags: // tags
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::vector<std::string> > (); }
+#line 632 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_assignment: // assignment
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<AssignmentNode> > (); }
+#line 638 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_loop: // loop
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<LoopNode> > (); }
+#line 644 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_condition: // condition
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<ConditionNode> > (); }
+#line 650 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_expr: // expr
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<ExprNode> > (); }
+#line 656 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+#line 115 "parser.y"
+                 { yyo << yysym.value.template as < std::unique_ptr<LogicalExprNode> > (); }
+#line 662 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
         break;
 
       default:
@@ -574,13 +888,66 @@ namespace yy {
          when using variants.  */
       switch (yyr1_[yyn])
     {
+      case symbol_kind::S_LOGICAL_CONSTANT: // "logical_constant"
+        yylhs.value.emplace< bool > ();
+        break;
+
       case symbol_kind::S_NUMBER: // "number"
-      case symbol_kind::S_exp: // exp
         yylhs.value.emplace< int > ();
         break;
 
       case symbol_kind::S_IDENTIFIER: // "identifier"
+      case symbol_kind::S_TAG: // "tag"
+      case symbol_kind::S_VALUE: // "value"
+      case symbol_kind::S_STRING: // "string"
+      case symbol_kind::S_CHARACTER: // "character"
         yylhs.value.emplace< std::string > ();
+        break;
+
+      case symbol_kind::S_assignment: // assignment
+        yylhs.value.emplace< std::unique_ptr<AssignmentNode> > ();
+        break;
+
+      case symbol_kind::S_program: // program
+      case symbol_kind::S_block: // block
+        yylhs.value.emplace< std::unique_ptr<BlockNode> > ();
+        break;
+
+      case symbol_kind::S_call_func: // call_func
+        yylhs.value.emplace< std::unique_ptr<CallFuncNode> > ();
+        break;
+
+      case symbol_kind::S_condition: // condition
+        yylhs.value.emplace< std::unique_ptr<ConditionNode> > ();
+        break;
+
+      case symbol_kind::S_create_var: // create_var
+        yylhs.value.emplace< std::unique_ptr<CreateVarNode> > ();
+        break;
+
+      case symbol_kind::S_expr: // expr
+        yylhs.value.emplace< std::unique_ptr<ExprNode> > ();
+        break;
+
+      case symbol_kind::S_logical_expr: // logical_expr
+        yylhs.value.emplace< std::unique_ptr<LogicalExprNode> > ();
+        break;
+
+      case symbol_kind::S_loop: // loop
+        yylhs.value.emplace< std::unique_ptr<LoopNode> > ();
+        break;
+
+      case symbol_kind::S_statement: // statement
+        yylhs.value.emplace< std::unique_ptr<Node> > ();
+        break;
+
+      case symbol_kind::S_tags: // tags
+        yylhs.value.emplace< std::vector<std::string> > ();
+        break;
+
+      case symbol_kind::S_statements: // statements
+      case symbol_kind::S_args: // args
+        yylhs.value.emplace< std::vector<std::unique_ptr<Node>> > ();
         break;
 
       default:
@@ -603,88 +970,315 @@ namespace yy {
         {
           switch (yyn)
             {
-  case 2: // unit: assignments exp ";"
-#line 63 "parser.y"
-                          { driver.result = yystack_[1].value.as < int > (); }
-#line 610 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
-    break;
-
-  case 3: // assignments: %empty
-#line 66 "parser.y"
-           {}
-#line 616 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
-    break;
-
-  case 4: // assignments: assignments assignment
-#line 67 "parser.y"
-                             {}
-#line 622 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
-    break;
-
-  case 5: // assignment: "identifier" ":=" exp ";"
-#line 70 "parser.y"
-                              {
-        driver.variables[yystack_[3].value.as < std::string > ()] = yystack_[1].value.as < int > ();
-        if (driver.location_debug) {
-            std::cerr << driver.location << std::endl;
-        }
+  case 2: // program: statements
+#line 126 "parser.y"
+               {
+        yylhs.value.as < std::unique_ptr<BlockNode> > () = std::make_unique<BlockNode>(std::move(yystack_[0].value.as < std::vector<std::unique_ptr<Node>> > ()));
     }
-#line 633 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 979 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
-  case 6: // assignment: error ";"
-#line 76 "parser.y"
+  case 3: // block: "{" statements "}"
+#line 131 "parser.y"
+                       {
+        yylhs.value.as < std::unique_ptr<BlockNode> > () = std::make_unique<BlockNode>(std::move(yystack_[1].value.as < std::vector<std::unique_ptr<Node>> > ()));
+    }
+#line 987 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 4: // statements: %empty
+#line 136 "parser.y"
+           {
+        //$$ = vector<std::unique_ptr<Node>>();
+    }
+#line 995 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 5: // statements: statements statement
+#line 139 "parser.y"
+                           {
+        yylhs.value.as < std::vector<std::unique_ptr<Node>> > () = std::move(yystack_[1].value.as < std::vector<std::unique_ptr<Node>> > ());
+        yylhs.value.as < std::vector<std::unique_ptr<Node>> > ().push_back(std::move(make_unique(yystack_[0].value.as < std::unique_ptr<Node> > ())));
+    }
+#line 1004 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 6: // statement: assignment ";"
+#line 145 "parser.y"
+                   {
+        yylhs.value.as < std::unique_ptr<Node> > () = std::move(yystack_[1].value.as < std::unique_ptr<AssignmentNode> > ());
+    }
+#line 1012 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 7: // statement: call_func ";"
+#line 148 "parser.y"
+                    {
+        yylhs.value.as < std::unique_ptr<Node> > () = std::move(yystack_[1].value.as < std::unique_ptr<CallFuncNode> > ());
+    }
+#line 1020 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 8: // statement: create_var ";"
+#line 151 "parser.y"
+                     {
+        yylhs.value.as < std::unique_ptr<Node> > () = std::move(yystack_[1].value.as < std::unique_ptr<CreateVarNode> > ());
+    }
+#line 1028 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 9: // statement: loop
+#line 154 "parser.y"
+           {
+        yylhs.value.as < std::unique_ptr<Node> > () = std::move(yystack_[0].value.as < std::unique_ptr<LoopNode> > ());
+    }
+#line 1036 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 10: // statement: condition
+#line 157 "parser.y"
                 {
-    	// Hint for compilation error, resuming producing messages
-    	std::cerr << "You should provide assignment in the form: variable := expression ; " << std::endl;
+        yylhs.value.as < std::unique_ptr<Node> > () = std::move(yystack_[0].value.as < std::unique_ptr<ConditionNode> > ());
     }
-#line 642 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1044 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
-  case 7: // exp: "number"
-#line 84 "parser.y"
-    { yylhs.value.as < int > () = yystack_[0].value.as < int > (); }
-#line 648 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+  case 11: // statement: block
+#line 160 "parser.y"
+            {
+        yylhs.value.as < std::unique_ptr<Node> > () = std::move(yystack_[0].value.as < std::unique_ptr<BlockNode> > ());
+    }
+#line 1052 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
-  case 8: // exp: "identifier"
-#line 85 "parser.y"
-                   {yylhs.value.as < int > () = driver.variables[yystack_[0].value.as < std::string > ()];}
-#line 654 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+  case 12: // create_var: "identifier" ":" tags
+#line 165 "parser.y"
+                          {
+        yylhs.value.as < std::unique_ptr<CreateVarNode> > () = make_unique<CreateVarNode>(yystack_[2].value.as < std::string > (), yystack_[0].value.as < std::vector<std::string> > ());
+        //driver.variables[$1] = 0;
+    }
+#line 1061 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
-  case 9: // exp: exp "+" exp
-#line 86 "parser.y"
-                  {yylhs.value.as < int > () = yystack_[2].value.as < int > () + yystack_[0].value.as < int > (); }
-#line 660 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+  case 13: // call_func: "identifier" "(" args ")"
+#line 171 "parser.y"
+                              {
+        FuncType id = FuncType::NONE;
+        // choose func type from $1
+        yylhs.value.as < std::unique_ptr<CallFuncNode> > () = make_unique<CallFuncNode>(id, yystack_[1].value.as < std::vector<std::unique_ptr<Node>> > ());
+    }
+#line 1071 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
-  case 10: // exp: exp "-" exp
-#line 87 "parser.y"
-                  {yylhs.value.as < int > () = yystack_[2].value.as < int > () - yystack_[0].value.as < int > (); }
-#line 666 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+  case 14: // args: %empty
+#line 178 "parser.y"
+           {
+        // $$ = vector<std::unique_ptr<Node>>()
+    }
+#line 1079 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
-  case 11: // exp: exp "*" exp
-#line 88 "parser.y"
-                  {yylhs.value.as < int > () = yystack_[2].value.as < int > () * yystack_[0].value.as < int > (); }
-#line 672 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+  case 15: // args: args "," expr
+#line 181 "parser.y"
+                    {
+        yylhs.value.as < std::vector<std::unique_ptr<Node>> > () = std::move(yystack_[2].value.as < std::vector<std::unique_ptr<Node>> > ());
+        yylhs.value.as < std::vector<std::unique_ptr<Node>> > ().push_back(std::move(yystack_[0].value.as < std::unique_ptr<ExprNode> > ()));
+    }
+#line 1088 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
-  case 12: // exp: exp "/" exp
-#line 89 "parser.y"
-                  {yylhs.value.as < int > () = yystack_[2].value.as < int > () / yystack_[0].value.as < int > (); }
-#line 678 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+  case 16: // tags: "tag"
+#line 195 "parser.y"
+          { yylhs.value.as < std::vector<std::string> > () = yystack_[0].value.as < std::string > (); }
+#line 1094 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
-  case 13: // exp: "(" exp ")"
-#line 90 "parser.y"
-                  {yylhs.value.as < int > () = yystack_[1].value.as < int > (); }
-#line 684 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+  case 17: // tags: "tag" tags
+#line 196 "parser.y"
+                 { 
+        yylhs.value.as < std::vector<std::string> > () = yystack_[0].value.as < std::vector<std::string> > ();
+        yylhs.value.as < std::vector<std::string> > ().push_back(yystack_[1].value.as < std::string > ());
+    }
+#line 1103 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 18: // assignment: "identifier" "=" expr
+#line 202 "parser.y"
+                          {
+        yylhs.value.as < std::unique_ptr<AssignmentNode> > () = std::make_unique<AssignmentNode>(yystack_[2].value.as < std::string > (), yystack_[0].value.as < std::unique_ptr<ExprNode> > ());
+        /*if (driver.location_debug) {
+            std::cerr << driver.location << std::endl;
+        }*/
+    }
+#line 1114 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 19: // loop: "@" "(" logical_expr ")" block
+#line 215 "parser.y"
+                                   {
+        yylhs.value.as < std::unique_ptr<LoopNode> > () = make_unique<LoopNode>(std::move(yystack_[2].value.as < std::unique_ptr<LogicalExprNode> > ()), std::move(yystack_[0].value.as < std::unique_ptr<BlockNode> > ()));
+    }
+#line 1122 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 20: // condition: "?" "(" logical_expr ")" block
+#line 220 "parser.y"
+                                   {
+        yylhs.value.as < std::unique_ptr<ConditionNode> > () = make_unique<ConditionNode>(std::move(yystack_[2].value.as < std::unique_ptr<LogicalExprNode> > ()), std::move(yystack_[0].value.as < std::unique_ptr<BlockNode> > ()));
+    }
+#line 1130 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 21: // expr: "number"
+#line 225 "parser.y"
+             { 
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::make_unique<NumberExprNode>(yystack_[0].value.as < int > ()); 
+    }
+#line 1138 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 22: // expr: "identifier"
+#line 228 "parser.y"
+                   { 
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::make_unique<VarExprNode>(yystack_[0].value.as < std::string > ());
+        /*driver.variables[$1];*/
+    }
+#line 1147 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 23: // expr: call_func
+#line 232 "parser.y"
+                {
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::move(yystack_[0].value.as < std::unique_ptr<CallFuncNode> > ());
+    }
+#line 1155 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 24: // expr: "-" expr
+#line 235 "parser.y"
+               {
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::make_unique<ExprNode>(yystack_[0].value.as < std::unique_ptr<ExprNode> > (), nullptr, Operator::NEGATIVE);
+    }
+#line 1163 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 25: // expr: expr "+" expr
+#line 238 "parser.y"
+                    { 
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::make_unique<ExprNode>(yystack_[2].value.as < std::unique_ptr<ExprNode> > (), yystack_[0].value.as < std::unique_ptr<ExprNode> > (), Operator::ADD); }
+#line 1170 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 26: // expr: expr "-" expr
+#line 240 "parser.y"
+                    { 
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::make_unique<ExprNode>(yystack_[2].value.as < std::unique_ptr<ExprNode> > (), yystack_[0].value.as < std::unique_ptr<ExprNode> > (), Operator::SUB); }
+#line 1177 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 27: // expr: expr "*" expr
+#line 242 "parser.y"
+                    { 
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::make_unique<Expr_Node>(yystack_[2].value.as < std::unique_ptr<ExprNode> > (), yystack_[0].value.as < std::unique_ptr<ExprNode> > () Operator::MULT); }
+#line 1184 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 28: // expr: expr "/" expr
+#line 244 "parser.y"
+                    { 
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::make_unique<ExprNode>(yystack_[2].value.as < std::unique_ptr<ExprNode> > (), yystack_[0].value.as < std::unique_ptr<ExprNode> > () Operator::DIV); }
+#line 1191 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 29: // expr: expr "%" expr
+#line 246 "parser.y"
+                    { 
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::make_unique<ExprNode>(yystack_[2].value.as < std::unique_ptr<ExprNode> > (), yystack_[0].value.as < std::unique_ptr<ExprNode> > (), Operator::MOD); }
+#line 1198 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 30: // expr: "(" expr ")"
+#line 248 "parser.y"
+                   { 
+        yylhs.value.as < std::unique_ptr<ExprNode> > () = std::move(yystack_[1].value.as < std::unique_ptr<ExprNode> > ()); 
+    }
+#line 1206 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 31: // logical_expr: "logical_constant"
+#line 253 "parser.y"
+                       {
+        yylhs.value.as < std::unique_ptr<LogicalExprNode> > () = std::make_unique<LogicalConstantNode>(yystack_[0].value.as < bool > ());
+    }
+#line 1214 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 32: // logical_expr: "!" logical_expr
+#line 256 "parser.y"
+                       { 
+        yylhs.value.as < std::unique_ptr<LogicalExprNode> > () = std::make_unique<LogicalExprNode>(yystack_[0].value.as < std::unique_ptr<LogicalExprNode> > (), nullptr, LogicalOperator::NOT);
+    }
+#line 1222 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 33: // logical_expr: logical_expr "&" logical_expr
+#line 259 "parser.y"
+                                    { 
+        yylhs.value.as < std::unique_ptr<LogicalExprNode> > () = std::make_unique<LogicalExprNode>(yystack_[2].value.as < std::unique_ptr<LogicalExprNode> > (), yystack_[0].value.as < std::unique_ptr<LogicalExprNode> > (), LogicalOperator::AND);
+    }
+#line 1230 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 34: // logical_expr: logical_expr "|" logical_expr
+#line 262 "parser.y"
+                                    { 
+        yylhs.value.as < std::unique_ptr<LogicalExprNode> > () = std::make_unique<LogicalExprNode>(yystack_[2].value.as < std::unique_ptr<LogicalExprNode> > (), yystack_[0].value.as < std::unique_ptr<LogicalExprNode> > (), LogicalOperator::OR); 
+    }
+#line 1238 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 35: // logical_expr: logical_expr "==" logical_expr
+#line 265 "parser.y"
+                                     {
+        yylhs.value.as < std::unique_ptr<LogicalExprNode> > () = std::make_unique<LogicalExprNode>(yystack_[2].value.as < std::unique_ptr<LogicalExprNode> > (), yystack_[0].value.as < std::unique_ptr<LogicalExprNode> > (), LogicalOperator::EQUAL); 
+    }
+#line 1246 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 36: // logical_expr: logical_expr "!=" logical_expr
+#line 268 "parser.y"
+                                     {
+        yylhs.value.as < std::unique_ptr<LogicalExprNode> > () = std::make_unique<LogicalExprNode>(yystack_[2].value.as < std::unique_ptr<LogicalExprNode> > (), yystack_[0].value.as < std::unique_ptr<LogicalExprNode> > (), LogicalOperator::NOT_EQUAL); 
+    }
+#line 1254 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 37: // logical_expr: "(" logical_expr ")"
+#line 271 "parser.y"
+                           { 
+        yylhs.value.as < std::unique_ptr<LogicalExprNode> > () = std::move(yystack_[1].value.as < std::unique_ptr<LogicalExprNode> > ()); 
+    }
+#line 1262 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 38: // logical_expr: expr "==" expr
+#line 274 "parser.y"
+                     {
+        yylhs.value.as < std::unique_ptr<LogicalExprNode> > () = std::make_unique<ComparasionNode>(yystack_[2].value.as < std::unique_ptr<ExprNode> > (), yystack_[0].value.as < std::unique_ptr<ExprNode> > (), LogicalOperator::EQUAL); 
+    }
+#line 1270 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+    break;
+
+  case 39: // logical_expr: expr "!=" expr
+#line 277 "parser.y"
+                     {
+        yylhs.value.as < std::unique_ptr<LogicalExprNode> > () = std::make_unique<ComparasionNode>(yystack_[2].value.as < std::unique_ptr<ExprNode> > (), yystack_[0].value.as < std::unique_ptr<ExprNode> > (), LogicalOperator::NOT_EQUAL); 
+    }
+#line 1278 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
 
-#line 688 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1282 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
 
             default:
               break;
@@ -1036,76 +1630,113 @@ namespace yy {
   }
 
 
-  const signed char parser::yypact_ninf_ = -6;
+  const signed char parser::yypact_ninf_ = -19;
 
   const signed char parser::yytable_ninf_ = -1;
 
   const signed char
   parser::yypact_[] =
   {
-      -6,    22,     5,    -6,    13,    23,     2,    -6,    -6,    -3,
-      -6,    -6,    21,    23,    23,    23,    23,    23,    -6,    -6,
-      14,     8,     8,    -6,    -6,    -6
+     -19,     4,    84,   -19,   -19,    -9,    -7,    -1,   -19,   -19,
+       3,    28,    31,   -19,   -19,    58,    29,    29,     9,   -19,
+     -11,   -19,   -19,   -19,   -19,     9,    29,    29,    43,   -19,
+     -19,   -19,    64,    74,    81,     9,   106,    -4,   -11,   -19,
+     109,     8,    41,    88,     9,     9,     9,     9,     9,     9,
+       9,    29,    29,    29,    29,    47,    47,    57,     9,   -19,
+     -19,   -19,   -19,   109,   109,   -19,   -19,   -19,   106,   106,
+       8,     8,    32,    32,   -19,   -19,   106
   };
 
   const signed char
   parser::yydefact_[] =
   {
-       3,     0,     0,     1,     0,     0,     8,     7,     4,     0,
-       6,     8,     0,     0,     0,     0,     0,     0,     2,    13,
-       0,    10,     9,    11,    12,     5
+       4,     0,     2,     1,     4,     0,     0,     0,    11,     5,
+       0,     0,     0,     9,    10,     0,     0,     0,     0,    14,
+       0,     8,     7,     6,     3,     0,     0,     0,    22,    21,
+      31,    23,     0,     0,     0,     0,    18,     0,    16,    12,
+      24,    32,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,    13,
+      17,    30,    37,    26,    25,    27,    28,    29,    38,    39,
+      35,    36,    33,    34,    20,    19,    15
   };
 
   const signed char
   parser::yypgoto_[] =
   {
-      -6,    -6,    -6,    -6,    -5
+     -19,   -19,     0,    19,   -19,   -19,     1,   -19,    38,   -19,
+     -19,   -19,   -18,   -16
   };
 
   const signed char
   parser::yydefgoto_[] =
   {
-       0,     1,     2,     8,     9
+       0,     1,     8,     2,     9,    10,    31,    37,    39,    12,
+      13,    14,    32,    33
   };
 
   const signed char
   parser::yytable_[] =
   {
-      12,    14,    15,    16,    17,    13,     4,    18,    20,    21,
-      22,    23,    24,     5,    16,    17,     6,     7,    14,    15,
-      16,    17,     3,    10,    25,    14,    15,    16,    17,     0,
-      19,     5,     0,     0,    11,     7
+      36,    34,    18,    11,     3,    58,    16,    40,    17,    42,
+      41,    43,    59,    25,    19,    38,    11,    57,    51,    52,
+      20,    53,    54,    15,    35,    21,    63,    64,    65,    66,
+      67,    68,    69,    25,    28,    70,    71,    72,    73,    29,
+      76,    26,    51,    52,    27,    44,    45,    46,    47,    48,
+      22,    49,    50,    23,    28,    74,    75,    61,    19,    29,
+      30,    44,    45,    46,    47,    48,     4,     0,    44,    45,
+      46,    47,    48,    61,    49,    50,    60,     4,    24,     0,
+       0,     5,     6,     7,    51,    52,     0,    53,    54,     0,
+      55,    51,    52,     0,    53,    54,     0,    56,    51,    52,
+       0,    53,    54,     4,    62,     0,     0,     5,     6,     7,
+      44,    45,    46,    47,    48,    46,    47,    48
   };
 
   const signed char
   parser::yycheck_[] =
   {
-       5,     4,     5,     6,     7,     3,     1,    10,    13,    14,
-      15,    16,    17,     8,     6,     7,    11,    12,     4,     5,
-       6,     7,     0,    10,    10,     4,     5,     6,     7,    -1,
-       9,     8,    -1,    -1,    11,    12
+      18,    17,     3,     2,     0,     9,    15,    25,    15,    27,
+      26,    27,    16,     4,    15,    26,    15,    35,    10,    11,
+      21,    13,    14,     4,    15,    22,    44,    45,    46,    47,
+      48,    49,    50,     4,    25,    51,    52,    53,    54,    30,
+      58,    12,    10,    11,    15,     4,     5,     6,     7,     8,
+      22,    10,    11,    22,    25,    55,    56,    16,    15,    30,
+      31,     4,     5,     6,     7,     8,    19,    -1,     4,     5,
+       6,     7,     8,    16,    10,    11,    38,    19,    20,    -1,
+      -1,    23,    24,    25,    10,    11,    -1,    13,    14,    -1,
+      16,    10,    11,    -1,    13,    14,    -1,    16,    10,    11,
+      -1,    13,    14,    19,    16,    -1,    -1,    23,    24,    25,
+       4,     5,     6,     7,     8,     6,     7,     8
   };
 
   const signed char
   parser::yystos_[] =
   {
-       0,    14,    15,     0,     1,     8,    11,    12,    16,    17,
-      10,    11,    17,     3,     4,     5,     6,     7,    10,     9,
-      17,    17,    17,    17,    17,    10
+       0,    34,    36,     0,    19,    23,    24,    25,    35,    37,
+      38,    39,    42,    43,    44,    36,    15,    15,     3,    15,
+      21,    22,    22,    22,    20,     4,    12,    15,    25,    30,
+      31,    39,    45,    46,    46,    15,    45,    40,    26,    41,
+      45,    46,    45,    46,     4,     5,     6,     7,     8,    10,
+      11,    10,    11,    13,    14,    16,    16,    45,     9,    16,
+      41,    16,    16,    45,    45,    45,    45,    45,    45,    45,
+      46,    46,    46,    46,    35,    35,    45
   };
 
   const signed char
   parser::yyr1_[] =
   {
-       0,    13,    14,    15,    15,    16,    16,    17,    17,    17,
-      17,    17,    17,    17
+       0,    33,    34,    35,    36,    36,    37,    37,    37,    37,
+      37,    37,    38,    39,    40,    40,    41,    41,    42,    43,
+      44,    45,    45,    45,    45,    45,    45,    45,    45,    45,
+      45,    46,    46,    46,    46,    46,    46,    46,    46,    46
   };
 
   const signed char
   parser::yyr2_[] =
   {
-       0,     2,     3,     0,     2,     4,     2,     1,     1,     3,
-       3,     3,     3,     3
+       0,     2,     1,     3,     0,     2,     2,     2,     2,     1,
+       1,     1,     3,     4,     0,     3,     1,     2,     3,     5,
+       5,     1,     1,     1,     2,     3,     3,     3,     3,     3,
+       3,     1,     2,     3,     3,     3,     3,     3,     3,     3
   };
 
 
@@ -1115,19 +1746,26 @@ namespace yy {
   const char*
   const parser::yytname_[] =
   {
-  "\"end of file\"", "error", "\"invalid token\"", "\":=\"", "\"-\"",
-  "\"+\"", "\"*\"", "\"/\"", "\"(\"", "\")\"", "\";\"", "\"identifier\"",
-  "\"number\"", "$accept", "unit", "assignments", "assignment", "exp", YY_NULLPTR
+  "\"end of file\"", "error", "\"invalid token\"", "\"=\"", "\"-\"",
+  "\"+\"", "\"*\"", "\"/\"", "\"%\"", "\",\"", "\"==\"", "\"!=\"", "\"!\"",
+  "\"&\"", "\"|\"", "\"(\"", "\")\"", "\"[\"", "\"]\"", "\"{\"", "\"}\"",
+  "\":\"", "\";\"", "\"?\"", "\"@\"", "\"identifier\"", "\"tag\"",
+  "\"value\"", "\"string\"", "\"character\"", "\"number\"",
+  "\"logical_constant\"", "\"^\"", "$accept", "program", "block",
+  "statements", "statement", "create_var", "call_func", "args", "tags",
+  "assignment", "loop", "condition", "expr", "logical_expr", YY_NULLPTR
   };
 #endif
 
 
 #if YYDEBUG
-  const signed char
+  const short
   parser::yyrline_[] =
   {
-       0,    63,    63,    66,    67,    70,    76,    84,    85,    86,
-      87,    88,    89,    90
+       0,   126,   126,   131,   136,   139,   145,   148,   151,   154,
+     157,   160,   165,   171,   178,   181,   195,   196,   202,   215,
+     220,   225,   228,   232,   235,   238,   240,   242,   244,   246,
+     248,   253,   256,   259,   262,   265,   268,   271,   274,   277
   };
 
   void
@@ -1159,9 +1797,9 @@ namespace yy {
 
 
 } // yy
-#line 1163 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1801 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
 
-#line 92 "parser.y"
+#line 281 "parser.y"
 
 
 void

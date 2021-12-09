@@ -8,6 +8,8 @@
 
 %code requires {
     #include <string>
+    #include <memory>
+    #include <vector>
     /* Forward declaration of classes in order to disable cyclic dependencies */
     class Scanner;
     class Driver;
@@ -26,6 +28,9 @@
     class BlockNode;
     class ConditionNode;
     class LoopNode;
+    class CreateVarNode;
+
+    #include "parse_tree.hh"
 }
 
 
@@ -35,7 +40,6 @@
 %code {
     #include "driver.hh"
     #include "location.hh"
-    #include "parse_tree.hh"
 
     /* Redefine parser to use our function from scanner */
     static yy::parser::symbol_type yylex(Scanner &scanner) {
@@ -92,11 +96,15 @@
 %token <int> NUMBER "number"
 %token <bool> LOGICAL_CONSTANT "logical_constant"
 
+%nterm <std::unique_ptr<BlockNode>> program
+%nterm <std::unique_ptr<BlockNode>> block
 %nterm <std::vector<std::unique_ptr<Node>>> statements
 %nterm <std::unique_ptr<Node>> statement
+%nterm <std::unique_ptr<CreateVarNode>> create_var
 %nterm <std::unique_ptr<CallFuncNode>> call_func
 %nterm <std::vector<std::unique_ptr<Node>>> args
-
+%nterm <std::unique_ptr<LoopNode>> loop
+%nterm <std::unique_ptr<ConditionNode>> condition
 %nterm <std::vector<std::string>> tags
 %nterm <std::unique_ptr<Node>> any_expr
 %nterm <std::unique_ptr<AssignmentNode>> assignment
@@ -113,7 +121,17 @@
 %left "!";
 %left "&" "|" "^";
 
-%start statements;
+%start program;
+program:
+    statements {
+        $$ = std::make_unique<BlockNode>(std::move($1));
+    };
+
+block:
+    "{" statements "}" {
+        $$ = std::make_unique<BlockNode>(std::move($2));
+    };
+
 statements:
     %empty {
         //$$ = vector<std::unique_ptr<Node>>();
@@ -130,7 +148,7 @@ statement:
     | call_func ";" {
         $$ = std::move($1);
     }
-    | create_var {
+    | create_var ";" {
         $$ = std::move($1);
     }
     | loop {
@@ -138,11 +156,15 @@ statement:
     }
     | condition {
         $$ = std::move($1);
+    }
+    | block {
+        $$ = std::move($1);
     };
 
 create_var: // todo: add initialization
     "identifier" ":" tags {
-        driver.variables[$1] = 0;
+        $$ = make_unique<CreateVarNode>($1, $3);
+        //driver.variables[$1] = 0;
     };
 
 call_func:
@@ -190,13 +212,13 @@ assignment:
 
 
 loop:
-    "@" "(" LOGICAL_EXPR ")" block {
+    "@" "(" logical_expr ")" block {
         $$ = make_unique<LoopNode>(std::move($3), std::move($5));
     };
 
 condition:
-    "?" "(" LOGICAL_EXPR ")" block {
-        $$ = make_unique();
+    "?" "(" logical_expr ")" block {
+        $$ = make_unique<ConditionNode>(std::move($3), std::move($5));
     };
 
 expr:

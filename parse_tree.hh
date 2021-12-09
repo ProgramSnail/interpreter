@@ -239,7 +239,7 @@ protected:
 public:
 	CallFuncNode(FuncType id,
 			std::vector<std::unique_ptr<Node>>&& args)
-			: id(id), args(args) {}
+			: id(id), args(std::move(args)) {}
  	T execute(ExecuteTag) override {
  		throw RuntimeError{"RE: Void function in expression"};
  	} 
@@ -317,5 +317,18 @@ public:
 		while(condition->execute(ExecuteTag())) {
 			doBlock->execute();
 		} 
+	}
+};
+
+class CreateVarNode : public Node {
+private:
+	std::string id;
+	std::vector<std::string> tags;
+public:
+	CreateVarNode(const std::string& id,
+			const std::vector<std::string>& tags) 
+			: id(id), tags(tags) {}
+	void execute() override {
+		//
 	}
 };
