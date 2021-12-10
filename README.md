@@ -11,14 +11,20 @@ name: \#type;
 #### Conditions
 
 ? ( condition ) {
+
 	do then
+
 } : {
+
 	do else
+
 }
 
 #### Loops
 
 @ ( condition ) {
+
+
 
 }
 
@@ -32,29 +38,44 @@ function_name(arg0, arg1, arg2);
 
 #### Operators
 
--a
+- a
+
 a + b
+
 a - b
+
 a * b
+
 a / b
+
 a % b
+
 (...)
 
 #### Logical Operators
 
 !a
+
 a | b
+
 a & b
+
 a == b
+
 a != b
+
 (...)
 
 #### Comparasions
 
 a == b
+
 a != b
+
 a < b
+
 a > b
+
 (...)
 
 #### Strings
@@ -62,13 +83,16 @@ a > b
 "string"
 
 \n, \r, \t, \0 - special
+
 \ with other symbol - that symbol
 
 #### Constants
 
 $name - constant
 
+
 $true - true
+
 $false - false
 
 #### Functions
