@@ -12,11 +12,11 @@ name: \#type;
 
 ? ( condition ) {
 
-	do then
+\	do then
 
 } : {
 
-	do else
+\	do else
 
 }
 
@@ -38,7 +38,7 @@ function_name(arg0, arg1, arg2);
 
 #### Operators
 
-- a
+\- a
 
 a + b
 
