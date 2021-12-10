@@ -10,6 +10,12 @@ Driver::Driver() :
     scanner(*this), parser(scanner, *this) {
 }
 
+void Driver::configStreams(std::istream& in, 
+        std::ostream& out, std::ostream& errOut) {
+    inStream = &in;
+    outStream = &out;
+    errOutStream = &errOut;
+} 
 
 int Driver::parse(const std::string& f) {
     file = f;
@@ -26,16 +32,17 @@ void Driver::scan_begin() {
     scanner.set_debug(trace_scanning);
   if (file.empty () || file == "-") {
   } else {
-    stream.open(file);
-    std::cerr << "File name is " << file << std::endl;
-    std::cerr << "Interpreting started.\n";
+    in.open(file);
+    (*errOutStream) << "File name is " << file << std::endl;
+    (*errOutStream) << "Interpreting started.\n";
     // Restart scanner resetting buffer!
-    scanner.yyrestart(&stream);
+    scanner.yyrestart(&in);
   }
 }
 
 void Driver::scan_end()
 {
-    stream.close();
+    in.close();
+    (*errOutStream) << "Interpreting finished." << std::endl;
 }
 

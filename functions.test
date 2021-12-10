@@ -1,0 +1,9 @@
+write("Hello%");
+write("\nu");
+write("WoRld\\123$");
+write("\t\r\"^");
+print(123);
+write("\n");
+print(2424545);
+write("\n");
+print(scan());

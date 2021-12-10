@@ -419,7 +419,6 @@ namespace yy {
       // assignment
       char dummy1[sizeof (AssignmentNode*)];
 
-      // program
       // block
       char dummy2[sizeof (BlockNode*)];
 
@@ -458,14 +457,17 @@ namespace yy {
       // "character"
       char dummy12[sizeof (std::string)];
 
+      // program
+      char dummy13[sizeof (std::unique_ptr<BlockNode>)];
+
       // external_statements
       // statements
       // args_or_none
       // args
-      char dummy13[sizeof (std::vector<Node*>)];
+      char dummy14[sizeof (std::vector<Node*>)];
 
       // tags
-      char dummy14[sizeof (std::vector<std::string>)];
+      char dummy15[sizeof (std::vector<std::string>)];
     };
 
     /// The size of the largest semantic type.
@@ -659,7 +661,6 @@ namespace yy {
         value.move< AssignmentNode* > (std::move (that.value));
         break;
 
-      case symbol_kind::S_program: // program
       case symbol_kind::S_block: // block
         value.move< BlockNode* > (std::move (that.value));
         break;
@@ -707,6 +708,10 @@ namespace yy {
       case symbol_kind::S_STRING: // "string"
       case symbol_kind::S_CHARACTER: // "character"
         value.move< std::string > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_program: // program
+        value.move< std::unique_ptr<BlockNode> > (std::move (that.value));
         break;
 
       case symbol_kind::S_external_statements: // external_statements
@@ -912,6 +917,20 @@ namespace yy {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, std::unique_ptr<BlockNode>&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const std::unique_ptr<BlockNode>& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, std::vector<Node*>&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
@@ -967,7 +986,6 @@ switch (yykind)
         value.template destroy< AssignmentNode* > ();
         break;
 
-      case symbol_kind::S_program: // program
       case symbol_kind::S_block: // block
         value.template destroy< BlockNode* > ();
         break;
@@ -1015,6 +1033,10 @@ switch (yykind)
       case symbol_kind::S_STRING: // "string"
       case symbol_kind::S_CHARACTER: // "character"
         value.template destroy< std::string > ();
+        break;
+
+      case symbol_kind::S_program: // program
+        value.template destroy< std::unique_ptr<BlockNode> > ();
         break;
 
       case symbol_kind::S_external_statements: // external_statements
@@ -2130,7 +2152,6 @@ switch (yykind)
         value.copy< AssignmentNode* > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_program: // program
       case symbol_kind::S_block: // block
         value.copy< BlockNode* > (YY_MOVE (that.value));
         break;
@@ -2180,6 +2201,10 @@ switch (yykind)
         value.copy< std::string > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_program: // program
+        value.copy< std::unique_ptr<BlockNode> > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_external_statements: // external_statements
       case symbol_kind::S_statements: // statements
       case symbol_kind::S_args_or_none: // args_or_none
@@ -2226,7 +2251,6 @@ switch (yykind)
         value.move< AssignmentNode* > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_program: // program
       case symbol_kind::S_block: // block
         value.move< BlockNode* > (YY_MOVE (s.value));
         break;
@@ -2274,6 +2298,10 @@ switch (yykind)
       case symbol_kind::S_STRING: // "string"
       case symbol_kind::S_CHARACTER: // "character"
         value.move< std::string > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_program: // program
+        value.move< std::unique_ptr<BlockNode> > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_external_statements: // external_statements
@@ -2353,7 +2381,7 @@ switch (yykind)
 
 
 } // yy
-#line 2357 "/home/snail/Code/FormalLang/interpreter/parser.hh"
+#line 2385 "/home/snail/Code/FormalLang/interpreter/parser.hh"
 
 
 

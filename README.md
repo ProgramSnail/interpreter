@@ -84,7 +84,7 @@ a > b
 
 \n, \r, \t, \0 - special
 
-\ with other symbol - that symbol
+\\\\ - \\
 
 #### Constants
 

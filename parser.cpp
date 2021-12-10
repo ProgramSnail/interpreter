@@ -217,7 +217,6 @@ namespace yy {
         value.YY_MOVE_OR_COPY< AssignmentNode* > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_program: // program
       case symbol_kind::S_block: // block
         value.YY_MOVE_OR_COPY< BlockNode* > (YY_MOVE (that.value));
         break;
@@ -267,6 +266,10 @@ namespace yy {
         value.YY_MOVE_OR_COPY< std::string > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_program: // program
+        value.YY_MOVE_OR_COPY< std::unique_ptr<BlockNode> > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_external_statements: // external_statements
       case symbol_kind::S_statements: // statements
       case symbol_kind::S_args_or_none: // args_or_none
@@ -297,7 +300,6 @@ namespace yy {
         value.move< AssignmentNode* > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_program: // program
       case symbol_kind::S_block: // block
         value.move< BlockNode* > (YY_MOVE (that.value));
         break;
@@ -347,6 +349,10 @@ namespace yy {
         value.move< std::string > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_program: // program
+        value.move< std::unique_ptr<BlockNode> > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_external_statements: // external_statements
       case symbol_kind::S_statements: // statements
       case symbol_kind::S_args_or_none: // args_or_none
@@ -377,7 +383,6 @@ namespace yy {
         value.copy< AssignmentNode* > (that.value);
         break;
 
-      case symbol_kind::S_program: // program
       case symbol_kind::S_block: // block
         value.copy< BlockNode* > (that.value);
         break;
@@ -427,6 +432,10 @@ namespace yy {
         value.copy< std::string > (that.value);
         break;
 
+      case symbol_kind::S_program: // program
+        value.copy< std::unique_ptr<BlockNode> > (that.value);
+        break;
+
       case symbol_kind::S_external_statements: // external_statements
       case symbol_kind::S_statements: // statements
       case symbol_kind::S_args_or_none: // args_or_none
@@ -456,7 +465,6 @@ namespace yy {
         value.move< AssignmentNode* > (that.value);
         break;
 
-      case symbol_kind::S_program: // program
       case symbol_kind::S_block: // block
         value.move< BlockNode* > (that.value);
         break;
@@ -504,6 +512,10 @@ namespace yy {
       case symbol_kind::S_STRING: // "string"
       case symbol_kind::S_CHARACTER: // "character"
         value.move< std::string > (that.value);
+        break;
+
+      case symbol_kind::S_program: // program
+        value.move< std::unique_ptr<BlockNode> > (that.value);
         break;
 
       case symbol_kind::S_external_statements: // external_statements
@@ -780,7 +792,6 @@ namespace yy {
         yylhs.value.emplace< AssignmentNode* > ();
         break;
 
-      case symbol_kind::S_program: // program
       case symbol_kind::S_block: // block
         yylhs.value.emplace< BlockNode* > ();
         break;
@@ -830,6 +841,10 @@ namespace yy {
         yylhs.value.emplace< std::string > ();
         break;
 
+      case symbol_kind::S_program: // program
+        yylhs.value.emplace< std::unique_ptr<BlockNode> > ();
+        break;
+
       case symbol_kind::S_external_statements: // external_statements
       case symbol_kind::S_statements: // statements
       case symbol_kind::S_args_or_none: // args_or_none
@@ -864,10 +879,10 @@ namespace yy {
   case 2: // program: external_statements
 #line 117 "parser.y"
                         {
-        yylhs.value.as < BlockNode* > () = new BlockNode(yystack_[0].value.as < std::vector<Node*> > ());
-        yylhs.value.as < BlockNode* > ()->execute();
+        yylhs.value.as < std::unique_ptr<BlockNode> > () = std::make_unique<BlockNode>(yystack_[0].value.as < std::vector<Node*> > ());
+        yylhs.value.as < std::unique_ptr<BlockNode> > ()->execute();
     }
-#line 871 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 886 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 3: // block: "{" statements "}"
@@ -875,13 +890,13 @@ namespace yy {
                        {
         yylhs.value.as < BlockNode* > () = new BlockNode(yystack_[1].value.as < std::vector<Node*> > ());
     }
-#line 879 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 894 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 4: // external_statements: %empty
 #line 128 "parser.y"
            {}
-#line 885 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 900 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 5: // external_statements: external_statements statement
@@ -890,7 +905,7 @@ namespace yy {
         yylhs.value.as < std::vector<Node*> > () = yystack_[1].value.as < std::vector<Node*> > ();
         yylhs.value.as < std::vector<Node*> > ().push_back(yystack_[0].value.as < Node* > ());
     }
-#line 894 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 909 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 6: // external_statements: external_statements create_var ";"
@@ -899,13 +914,13 @@ namespace yy {
         yylhs.value.as < std::vector<Node*> > () = yystack_[2].value.as < std::vector<Node*> > ();
         yylhs.value.as < std::vector<Node*> > ().push_back(yystack_[1].value.as < CreateVarNode* > ());
     }
-#line 903 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 918 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 7: // statements: %empty
 #line 139 "parser.y"
            {}
-#line 909 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 924 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 8: // statements: statements statement
@@ -914,7 +929,7 @@ namespace yy {
         yylhs.value.as < std::vector<Node*> > () = yystack_[1].value.as < std::vector<Node*> > ();
         yylhs.value.as < std::vector<Node*> > ().push_back(yystack_[0].value.as < Node* > ());
     }
-#line 918 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 933 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 9: // statement: call_func ";"
@@ -922,7 +937,7 @@ namespace yy {
                   {
         yylhs.value.as < Node* > () = yystack_[1].value.as < CallFuncNode* > ();
     }
-#line 926 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 941 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 10: // statement: assignment ";"
@@ -930,7 +945,7 @@ namespace yy {
                      {
         yylhs.value.as < Node* > () = yystack_[1].value.as < AssignmentNode* > ();
     }
-#line 934 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 949 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 11: // statement: loop
@@ -938,7 +953,7 @@ namespace yy {
            {
         yylhs.value.as < Node* > () = yystack_[0].value.as < LoopNode* > ();
     }
-#line 942 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 957 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 12: // statement: condition
@@ -946,7 +961,7 @@ namespace yy {
                 {
         yylhs.value.as < Node* > () = yystack_[0].value.as < ConditionNode* > ();
     }
-#line 950 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 965 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 13: // statement: block
@@ -954,7 +969,7 @@ namespace yy {
             {
         yylhs.value.as < Node* > () = yystack_[0].value.as < BlockNode* > ();
     }
-#line 958 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 973 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 14: // create_var: "identifier" ":" tags
@@ -962,7 +977,7 @@ namespace yy {
                           {
         yylhs.value.as < CreateVarNode* > () = new CreateVarNode(yystack_[2].value.as < std::string > (), yystack_[0].value.as < std::vector<std::string> > (), &(driver.storage));
     }
-#line 966 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 981 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 15: // call_func: "identifier" "(" args_or_none ")"
@@ -980,18 +995,18 @@ namespace yy {
         }
         // choose func type from $1
         if (id == FuncType::SCAN) {
-            yylhs.value.as < CallFuncNode* > () = new CallTFuncNode(id, yystack_[1].value.as < std::vector<Node*> > ());
+            yylhs.value.as < CallFuncNode* > () = new CallTFuncNode(id, yystack_[1].value.as < std::vector<Node*> > (), *driver.inStream, *driver.outStream);
         } else {
-            yylhs.value.as < CallFuncNode* > () = new CallFuncNode(id, yystack_[1].value.as < std::vector<Node*> > ());
+            yylhs.value.as < CallFuncNode* > () = new CallFuncNode(id, yystack_[1].value.as < std::vector<Node*> > (), *driver.inStream, *driver.outStream);
         }
     }
-#line 989 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1004 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 16: // args_or_none: %empty
 #line 188 "parser.y"
            {}
-#line 995 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1010 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 17: // args_or_none: args
@@ -999,7 +1014,7 @@ namespace yy {
            {
         yylhs.value.as < std::vector<Node*> > () = yystack_[0].value.as < std::vector<Node*> > ();
     }
-#line 1003 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1018 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 18: // args: any_arg
@@ -1007,7 +1022,7 @@ namespace yy {
             {
         yylhs.value.as < std::vector<Node*> > ().push_back(yystack_[0].value.as < Node* > ());
     }
-#line 1011 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1026 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 19: // args: args "," any_arg
@@ -1016,7 +1031,7 @@ namespace yy {
         yylhs.value.as < std::vector<Node*> > () = yystack_[2].value.as < std::vector<Node*> > ();
         yylhs.value.as < std::vector<Node*> > ().push_back(yystack_[0].value.as < Node* > ());
     }
-#line 1020 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1035 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 20: // any_arg: expr
@@ -1024,7 +1039,7 @@ namespace yy {
          {
         yylhs.value.as < Node* > () = yystack_[0].value.as < ExprNode* > ();
     }
-#line 1028 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1043 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 21: // any_arg: "string"
@@ -1032,7 +1047,7 @@ namespace yy {
                {
         yylhs.value.as < Node* > () = new StringNode(yystack_[0].value.as < std::string > ());
     }
-#line 1036 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1051 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 22: // tags: "tag"
@@ -1040,7 +1055,7 @@ namespace yy {
           { 
         yylhs.value.as < std::vector<std::string> > ().push_back(yystack_[0].value.as < std::string > ()); 
     }
-#line 1044 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1059 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 23: // tags: "tag" tags
@@ -1049,7 +1064,7 @@ namespace yy {
         yylhs.value.as < std::vector<std::string> > () = yystack_[0].value.as < std::vector<std::string> > ();
         yylhs.value.as < std::vector<std::string> > ().push_back(yystack_[1].value.as < std::string > ());
     }
-#line 1053 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1068 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 24: // assignment: "identifier" "=" expr
@@ -1060,7 +1075,7 @@ namespace yy {
             std::cerr << driver.location << std::endl;
         }*/
     }
-#line 1064 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1079 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 25: // loop: "@" "(" logical_expr ")" block
@@ -1068,7 +1083,7 @@ namespace yy {
                                    {
         yylhs.value.as < LoopNode* > () = new LoopNode(yystack_[2].value.as < LogicalExprNode* > (), yystack_[0].value.as < BlockNode* > ());
     }
-#line 1072 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1087 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 26: // condition: "?" "(" logical_expr ")" block ":" block
@@ -1076,7 +1091,7 @@ namespace yy {
                                              {
         yylhs.value.as < ConditionNode* > () = new ConditionNode(yystack_[4].value.as < LogicalExprNode* > (), yystack_[2].value.as < BlockNode* > (), yystack_[0].value.as < BlockNode* > ());
     }
-#line 1080 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1095 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 27: // expr: "number"
@@ -1084,7 +1099,7 @@ namespace yy {
              { 
         yylhs.value.as < ExprNode* > () = new NumberExprNode(yystack_[0].value.as < int > ()); 
     }
-#line 1088 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1103 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 28: // expr: "identifier"
@@ -1092,7 +1107,7 @@ namespace yy {
                    { 
         yylhs.value.as < ExprNode* > () = new VarExprNode(yystack_[0].value.as < std::string > (), &(driver.storage));
     }
-#line 1096 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1111 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 29: // expr: call_func
@@ -1100,7 +1115,7 @@ namespace yy {
                 {
         yylhs.value.as < ExprNode* > () = yystack_[0].value.as < CallFuncNode* > ();
     }
-#line 1104 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1119 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 30: // expr: "-" expr
@@ -1108,7 +1123,7 @@ namespace yy {
                {
         yylhs.value.as < ExprNode* > () = new ExprNode(yystack_[0].value.as < ExprNode* > (), nullptr, Operator::NEGATIVE);
     }
-#line 1112 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1127 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 31: // expr: expr "+" expr
@@ -1116,7 +1131,7 @@ namespace yy {
                     { 
         yylhs.value.as < ExprNode* > () = new ExprNode(yystack_[2].value.as < ExprNode* > (), yystack_[0].value.as < ExprNode* > (), Operator::ADD); 
     }
-#line 1120 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1135 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 32: // expr: expr "-" expr
@@ -1124,7 +1139,7 @@ namespace yy {
                     { 
         yylhs.value.as < ExprNode* > () = new ExprNode(yystack_[2].value.as < ExprNode* > (), yystack_[0].value.as < ExprNode* > (), Operator::SUB); 
     }
-#line 1128 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1143 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 33: // expr: expr "*" expr
@@ -1132,7 +1147,7 @@ namespace yy {
                     { 
         yylhs.value.as < ExprNode* > () = new ExprNode(yystack_[2].value.as < ExprNode* > (), yystack_[0].value.as < ExprNode* > (), Operator::MULT); 
     }
-#line 1136 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1151 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 34: // expr: expr "/" expr
@@ -1140,7 +1155,7 @@ namespace yy {
                     { 
         yylhs.value.as < ExprNode* > () = new ExprNode(yystack_[2].value.as < ExprNode* > (), yystack_[0].value.as < ExprNode* > (), Operator::DIV); 
     }
-#line 1144 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1159 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 35: // expr: expr "%" expr
@@ -1148,7 +1163,7 @@ namespace yy {
                     { 
         yylhs.value.as < ExprNode* > () = new ExprNode(yystack_[2].value.as < ExprNode* > (), yystack_[0].value.as < ExprNode* > (), Operator::MOD); 
     }
-#line 1152 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1167 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 36: // expr: "(" expr ")"
@@ -1156,7 +1171,7 @@ namespace yy {
                    { 
         yylhs.value.as < ExprNode* > () = yystack_[1].value.as < ExprNode* > (); 
     }
-#line 1160 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1175 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 37: // logical_expr: "logical_constant"
@@ -1164,7 +1179,7 @@ namespace yy {
                        {
         yylhs.value.as < LogicalExprNode* > () = new LogicalConstantNode(yystack_[0].value.as < bool > ());
     }
-#line 1168 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1183 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 38: // logical_expr: "!" logical_expr
@@ -1172,7 +1187,7 @@ namespace yy {
                        { 
         yylhs.value.as < LogicalExprNode* > () = new LogicalExprNode(yystack_[0].value.as < LogicalExprNode* > (), nullptr, LogicalOperator::NOT);
     }
-#line 1176 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1191 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 39: // logical_expr: logical_expr "&" logical_expr
@@ -1180,7 +1195,7 @@ namespace yy {
                                     { 
         yylhs.value.as < LogicalExprNode* > () = new LogicalExprNode(yystack_[2].value.as < LogicalExprNode* > (), yystack_[0].value.as < LogicalExprNode* > (), LogicalOperator::AND);
     }
-#line 1184 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1199 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 40: // logical_expr: logical_expr "|" logical_expr
@@ -1188,7 +1203,7 @@ namespace yy {
                                     { 
         yylhs.value.as < LogicalExprNode* > () = new LogicalExprNode(yystack_[2].value.as < LogicalExprNode* > (), yystack_[0].value.as < LogicalExprNode* > (), LogicalOperator::OR); 
     }
-#line 1192 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1207 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 41: // logical_expr: logical_expr "==" logical_expr
@@ -1196,7 +1211,7 @@ namespace yy {
                                      {
         yylhs.value.as < LogicalExprNode* > () = new LogicalExprNode(yystack_[2].value.as < LogicalExprNode* > (), yystack_[0].value.as < LogicalExprNode* > (), LogicalOperator::EQUAL); 
     }
-#line 1200 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1215 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 42: // logical_expr: logical_expr "!=" logical_expr
@@ -1204,7 +1219,7 @@ namespace yy {
                                      {
         yylhs.value.as < LogicalExprNode* > () = new LogicalExprNode(yystack_[2].value.as < LogicalExprNode* > (), yystack_[0].value.as < LogicalExprNode* > (), LogicalOperator::NOT_EQUAL); 
     }
-#line 1208 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1223 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 43: // logical_expr: "(" logical_expr ")"
@@ -1212,7 +1227,7 @@ namespace yy {
                            { 
         yylhs.value.as < LogicalExprNode* > () = yystack_[1].value.as < LogicalExprNode* > (); 
     }
-#line 1216 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1231 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 44: // logical_expr: expr "==" expr
@@ -1220,7 +1235,7 @@ namespace yy {
                      {
         yylhs.value.as < LogicalExprNode* > () = new ComparasionNode(yystack_[2].value.as < ExprNode* > (), yystack_[0].value.as < ExprNode* > (), LogicalOperator::EQUAL); 
     }
-#line 1224 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1239 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 45: // logical_expr: expr "!=" expr
@@ -1228,7 +1243,7 @@ namespace yy {
                      {
         yylhs.value.as < LogicalExprNode* > () = new ComparasionNode(yystack_[2].value.as < ExprNode* > (), yystack_[0].value.as < ExprNode* > (), LogicalOperator::NOT_EQUAL); 
     }
-#line 1232 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1247 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 46: // logical_expr: expr "<" expr
@@ -1236,7 +1251,7 @@ namespace yy {
                     {
         yylhs.value.as < LogicalExprNode* > () = new ComparasionNode(yystack_[2].value.as < ExprNode* > (), yystack_[0].value.as < ExprNode* > (), LogicalOperator::LESS);
     }
-#line 1240 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1255 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
   case 47: // logical_expr: expr ">" expr
@@ -1244,11 +1259,11 @@ namespace yy {
                     {
         yylhs.value.as < LogicalExprNode* > () = new ComparasionNode(yystack_[2].value.as < ExprNode* > (), yystack_[0].value.as < ExprNode* > (), LogicalOperator::GREATHER);
     }
-#line 1248 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1263 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
     break;
 
 
-#line 1252 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1267 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
 
             default:
               break;
@@ -1778,7 +1793,7 @@ namespace yy {
 
 
 } // yy
-#line 1782 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
+#line 1797 "/home/snail/Code/FormalLang/interpreter/parser.cpp"
 
 #line 309 "parser.y"
 

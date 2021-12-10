@@ -1,0 +1,26 @@
+a: #int;
+b: #int;
+
+a = 0; 
+
+@ (a < 5) {
+	print(a);
+	a = a + 1;
+	b = scan();
+	print(a * b);
+}
+
+c: #int;
+d: #int;
+
+c = 1;
+
+@ (c < 7) {
+	d = 3;
+	@ (d > 0) {
+		print(c * d);
+		d = d - 1;
+	}
+	c = c + 2;
+	write("\n");
+}

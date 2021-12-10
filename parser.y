@@ -83,7 +83,7 @@
 %token <int> NUMBER "number"
 %token <bool> LOGICAL_CONSTANT "logical_constant"
 
-%nterm <BlockNode*> program
+%nterm <std::unique_ptr<BlockNode>> program
 %nterm <BlockNode*> block
 %nterm <std::vector<Node*>> external_statements
 %nterm <std::vector<Node*>> statements
@@ -115,7 +115,7 @@
 %start program;
 program:
     external_statements {
-        $$ = new BlockNode($1);
+        $$ = std::make_unique<BlockNode>($1);
         $$->execute();
     };
 
@@ -178,9 +178,9 @@ call_func:
         }
         // choose func type from $1
         if (id == FuncType::SCAN) {
-            $$ = new CallTFuncNode(id, $3);
+            $$ = new CallTFuncNode(id, $3, *driver.inStream, *driver.outStream);
         } else {
-            $$ = new CallFuncNode(id, $3);
+            $$ = new CallFuncNode(id, $3, *driver.inStream, *driver.outStream);
         }
     };
 

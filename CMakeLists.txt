@@ -2,8 +2,13 @@ project(InterpreterProj)
 
 cmake_minimum_required(VERSION 3.13)
 
+set(CMAKE_CXX_STANDARD 14)
+
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
+
+
+enable_testing()
 
 set(
     HEADERS
@@ -29,7 +34,7 @@ FLEX_TARGET(
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
 add_executable(
-    Interpreter
+    interpreter
     main.cpp
     driver.cpp
     parse_tree.cpp
@@ -37,7 +42,21 @@ add_executable(
     ${FLEX_MyScanner_OUTPUTS}
 )
 
-target_include_directories(Interpreter PRIVATE ${InterpreterProj_SOURCE_DIR})
+add_executable(
+    tests
+    tests.cpp
+    driver.cpp
+    parse_tree.cpp
+    ${BISON_MyParser_OUTPUTS}
+    ${FLEX_MyScanner_OUTPUTS}
+)
 
+target_link_libraries(tests gtest_main)
 
+add_subdirectory(googletest)
 
+include(GoogleTest)
+
+gtest_discover_tests(tests)
+
+include_directories(interpreter PRIVATE ${InterpreterProj_SOURCE_DIR})

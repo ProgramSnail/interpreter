@@ -85,7 +85,9 @@ public:
 	}
 	
 	~RootNode() {
-		delete node;
+		if (node) {
+			delete node;
+		}
 	}
 };
 
@@ -93,8 +95,8 @@ public:
 
 class ExprNode : public Node {
 protected:
-	ExprNode* left;
-	ExprNode* right;
+	ExprNode* left = nullptr;
+	ExprNode* right = nullptr;
 	Operator oper = Operator::NONE;
 public:
 	ExprNode() = default;
@@ -110,8 +112,12 @@ public:
 	};
 
 	~ExprNode() {
-		delete left;
-		delete right;
+		if (left) {
+			delete left;
+		}
+		if (right) {
+			delete right;
+		}
 	}
 };
 
@@ -129,7 +135,7 @@ public:
 class VarExprNode : public ExprNode {
 protected:
 	std::string id;
-	Storage* storage;
+	Storage* storage = nullptr;
 public:
 	VarExprNode(const std::string& id, Storage* storage) 
 			: id(id), storage(storage) {}
@@ -139,8 +145,8 @@ public:
 
 class LogicalExprNode : public Node {
 protected:
-	Node* left;
-	Node* right;
+	Node* left = nullptr;
+	Node* right = nullptr;
 	LogicalOperator oper = LogicalOperator::NONE;
 public:
 	LogicalExprNode() = default;
@@ -155,8 +161,12 @@ public:
 	}
 
 	~LogicalExprNode() {
-		delete left;
-		delete right;
+		if (left) {
+			delete left;
+		}
+		if (right) {
+			delete right;
+		}
 	}
 };
 
@@ -184,8 +194,8 @@ public:
 class AssignmentNode : public Node {
 protected:
 	std::string varId;
-	ExprNode* expr;
-	Storage* storage;
+	ExprNode* expr = nullptr;
+	Storage* storage = nullptr;
 public:
 	AssignmentNode(const std::string& varId, 
 			ExprNode* expr, Storage* storage) 
@@ -205,8 +215,9 @@ public:
 	StringNode(const std::string& tmpStr) : str(tmpStr) {
 		str = str.substr(1, str.size() - 2);
 		size_t it = 1;
+		bool prevIsSlash = false;
 		for (size_t i = 1; i < str.size(); ++i, ++it) {
-			if (str[it - 1] == '\\') {
+			if (str[it - 1] == '\\' && !prevIsSlash) {
 				--it;
 				if (str[i] == 'n') {
 					str[it] = '\n';
@@ -216,13 +227,18 @@ public:
 					str[it] = '\r';
 				} else if (str[i] == '0') {
 					str[it] = '\0';
-				} else { // includes '/'
+				} else if (str[i] == '\\'){
+					str[it] = '\\';
+					prevIsSlash = true;
+				} else {
 					str[it] = str[i];
+					//CallRuntimeError("RE: Unrecognized Special symbol.");
 				}
 			} else {
 				if (it < i) {
 					str[it] = str[i];
 				}
+				prevIsSlash = false;
 			}
 		}
 		str.resize(it);
@@ -241,9 +257,12 @@ class CallFuncNode : public ExprNode {
 protected:
 	std::vector<Node*> args;
 	FuncType id;
+	std::istream* in = nullptr;
+	std::ostream* out = nullptr;
 public:
-	CallFuncNode(FuncType id, const std::vector<Node*>& args)
-			: id(id), args(args) {}
+	CallFuncNode(FuncType id, const std::vector<Node*>& args,
+			std::istream& in, std::ostream& out)
+			: id(id), args(args), in(&in), out(&out) {}
  	
  	T execute(ExecuteTag) override {
  		CallRuntimeError("RE: Void function in expression");
@@ -254,21 +273,24 @@ public:
 
 	~CallFuncNode() {
 		for (size_t i = 0; i < args.size(); ++i) {
-			delete args[i];
+			if (args[i]) {
+				delete args[i];
+			}
 		}
 	}
 };
 
 class CallTFuncNode : public CallFuncNode {
 public:
-	CallTFuncNode(FuncType id, const std::vector<Node*>& args) 
-			: CallFuncNode(id, args) {};
+	CallTFuncNode(FuncType id, const std::vector<Node*>& args,
+			std::istream& in, std::ostream& out) 
+			: CallFuncNode(id, args, in, out) {}
 
 	T execute(ExecuteTag) override {
 		size_t ans = 0;
 		switch (id) {
 			case FuncType::SCAN:
-				std::cin >> ans;
+				(*in) >> ans;
 				break;
 			default:
 				CallRuntimeError("RE: Unrecognized or void function used in expression.");
@@ -303,9 +325,9 @@ public:
 
 class ConditionNode : public Node {
 protected:
-	LogicalExprNode* condition;
-	Node* thenBlock;
-	Node* elseBlock;
+	LogicalExprNode* condition = nullptr;
+	Node* thenBlock = nullptr;
+	Node* elseBlock = nullptr;
 public:
 	ConditionNode(LogicalExprNode* condition,
 			Node* thenBlock, Node* elseBlock) 
@@ -322,16 +344,22 @@ public:
 	}
 	
 	~ConditionNode() {
-		delete condition;
-		delete thenBlock;
-		delete elseBlock;
+		if (condition) {
+			delete condition;
+		}
+		if (thenBlock) {
+			delete thenBlock;
+		}
+		if (elseBlock) {
+			delete elseBlock;
+		}
 	}
 };
 
 class LoopNode : public Node {
 protected:
-	LogicalExprNode* condition;
-	Node* doBlock;
+	LogicalExprNode* condition = nullptr;
+	Node* doBlock = nullptr;
 public:
 	LoopNode (LogicalExprNode* condition, Node* doBlock) 
 			: condition(condition), doBlock(doBlock) {}
@@ -343,8 +371,12 @@ public:
 	}
 	
 	~LoopNode() {
-		delete condition;
-		delete doBlock;
+		if (condition) {
+			delete condition;
+		}
+		if (doBlock) {
+			delete doBlock;
+		}
 	}
 };
 
@@ -352,7 +384,7 @@ class CreateVarNode : public Node {
 private:
 	std::string id;
 	std::vector<std::string> tags;
-	Storage* storage;
+	Storage* storage = nullptr;
 public:
 	CreateVarNode(const std::string& id,
 			const std::vector<std::string>& tags,

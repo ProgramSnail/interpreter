@@ -123,7 +123,7 @@ void CallFuncNode::execute() {
 				CallRuntimeError("RE: Wrong count of arguments in print().");
 			}
 			try {
-				std::cout << dynamic_cast<ExprNode*>(args[0])
+				(*out) << dynamic_cast<ExprNode*>(args[0])
 						->execute(ExecuteTag());
 			} catch (std::bad_cast) {
 				CallRuntimeError("RE: Wrong argument type in print().");
@@ -134,7 +134,7 @@ void CallFuncNode::execute() {
 				CallRuntimeError("RE: Wrong count of arguments to write().");
 			}
 			try {
-				std::cout << dynamic_cast<StringNode*>(args[0])
+				(*out) << dynamic_cast<StringNode*>(args[0])
 						->execute(ExecuteTag());
 			} catch(std::bad_cast) {
 				CallRuntimeError("RE: Wrong argument type in write()");
