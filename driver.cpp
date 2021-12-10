@@ -28,7 +28,7 @@ void Driver::scan_begin() {
   } else {
     stream.open(file);
     std::cerr << "File name is " << file << std::endl;
-
+    std::cerr << "Interpreting started.\n";
     // Restart scanner resetting buffer!
     scanner.yyrestart(&stream);
   }

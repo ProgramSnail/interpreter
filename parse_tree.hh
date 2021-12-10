@@ -203,10 +203,29 @@ private:
 	std::string str;
 public:
 	StringNode(const std::string& tmpStr) : str(tmpStr) {
-		/*if (str.size() < 2) {
-			CallRuntimeError("RE: Wrong string size."); //
-		}*/
 		str = str.substr(1, str.size() - 2);
+		size_t it = 1;
+		for (size_t i = 1; i < str.size(); ++i, ++it) {
+			if (str[it - 1] == '\\') {
+				--it;
+				if (str[i] == 'n') {
+					str[it] = '\n';
+				} else if (str[i] == 't') {
+					str[it] = '\t';
+				} else if (str[i] == 'r') {
+					str[it] = '\r';
+				} else if (str[i] == '0') {
+					str[it] = '\0';
+				} else { // includes '/'
+					str[it] = str[i];
+				}
+			} else {
+				if (it < i) {
+					str[it] = str[i];
+				}
+			}
+		}
+		str.resize(it);
 	}
 	
 	virtual std::string execute(ExecuteTag) {

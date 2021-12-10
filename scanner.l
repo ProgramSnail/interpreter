@@ -120,9 +120,10 @@ ch    ([^\\\"\']|(\\[\\\"\'0ntr]))
                 return yy::parser::make_IDENTIFIER(yytext, loc);
            }
 {value}    {
-                if (strcmp(yytext, "$true")) {
+                std::string str(yytext);
+                if (str == "$true") {
                     return yy::parser::make_LOGICAL_CONSTANT(true, loc);
-                } else if (strcmp(yytext, "$false")) {
+                } else if (str == "$false") {
                     return yy::parser::make_LOGICAL_CONSTANT(false, loc);
                 } else {
                     return yy::parser::make_VALUE(yytext, loc);

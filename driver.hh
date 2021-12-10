@@ -7,6 +7,7 @@
 #include "scanner.h"
 #include "parser.hh"
 #include "storage.hh"
+#include "parse_tree.hh"
 
 class Driver {
  public:

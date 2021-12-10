@@ -519,7 +519,7 @@ static const flex_int16_t yy_rule_linenum[36] =
        67,   69,   71,   77,   85,   87,   88,   89,   90,   91,
        93,   95,   96,   97,   98,  100,  101,  102,  104,  105,
       106,  107,  108,  109,  111,  112,  113,  114,  116,  117,
-      123,  133,  134,  135,  137
+      123,  134,  135,  136,  138
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -1019,9 +1019,10 @@ case 31:
 YY_RULE_SETUP
 #line 123 "scanner.l"
 {
-                if (strcmp(yytext, "$true")) {
+                std::string str(yytext);
+                if (str == "$true") {
                     return yy::parser::make_LOGICAL_CONSTANT(true, loc);
-                } else if (strcmp(yytext, "$false")) {
+                } else if (str == "$false") {
                     return yy::parser::make_LOGICAL_CONSTANT(false, loc);
                 } else {
                     return yy::parser::make_VALUE(yytext, loc);
@@ -1030,38 +1031,38 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 133 "scanner.l"
+#line 134 "scanner.l"
 return yy::parser::make_TAG(yytext, loc);
 	YY_BREAK
 case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
-#line 134 "scanner.l"
+#line 135 "scanner.l"
 return yy::parser::make_CHARACTER(yytext, loc);
 	YY_BREAK
 case 34:
 /* rule 34 can match eol */
 YY_RULE_SETUP
-#line 135 "scanner.l"
+#line 136 "scanner.l"
 return yy::parser::make_STRING(yytext, loc);
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 137 "scanner.l"
+#line 138 "scanner.l"
 {
                 throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
            }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 140 "scanner.l"
+#line 141 "scanner.l"
 return yy::parser::make_END (loc);
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 141 "scanner.l"
+#line 142 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1064 "/home/snail/Code/FormalLang/interpreter/scanner.cpp"
+#line 1065 "/home/snail/Code/FormalLang/interpreter/scanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2178,7 +2179,7 @@ void yyfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 141 "scanner.l"
+#line 142 "scanner.l"
 
 
 yy::parser::symbol_type make_NUMBER(

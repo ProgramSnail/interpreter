@@ -50,13 +50,14 @@
     #include <string>
     #include <memory>
     #include <vector>
+
     /* Forward declaration of classes in order to disable cyclic dependencies */
     class Scanner;
     class Driver;
 
     #include "parse_tree.hh"
 
-#line 60 "/home/snail/Code/FormalLang/interpreter/parser.hh"
+#line 61 "/home/snail/Code/FormalLang/interpreter/parser.hh"
 
 # include <cassert>
 # include <cstdlib> // std::abort
@@ -196,7 +197,7 @@
 #endif
 
 namespace yy {
-#line 200 "/home/snail/Code/FormalLang/interpreter/parser.hh"
+#line 201 "/home/snail/Code/FormalLang/interpreter/parser.hh"
 
 
 
@@ -2352,7 +2353,7 @@ switch (yykind)
 
 
 } // yy
-#line 2356 "/home/snail/Code/FormalLang/interpreter/parser.hh"
+#line 2357 "/home/snail/Code/FormalLang/interpreter/parser.hh"
 
 
 

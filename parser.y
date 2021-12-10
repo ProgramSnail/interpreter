@@ -10,6 +10,7 @@
     #include <string>
     #include <memory>
     #include <vector>
+
     /* Forward declaration of classes in order to disable cyclic dependencies */
     class Scanner;
     class Driver;
@@ -100,7 +101,7 @@
 %nterm <ExprNode*> expr
 
 // Prints output in parsing option for debugging location terminal
-%printer { /*yyo << $$;*/ } <*>;
+//%printer { yyo << $$; } <*>;
 
 %%
 %left "+" "-";
@@ -158,7 +159,7 @@ statement:
         $$ = $1;
     };
 
-create_var: // todo: add initialization
+create_var:
     "identifier" ":" tags {
         $$ = new CreateVarNode($1, $3, &(driver.storage));
     };
@@ -222,7 +223,7 @@ assignment:
             std::cerr << driver.location << std::endl;
         }*/
     };
-    /*| error ";" { // ??
+    /*| error ";" {
     	// Hint for compilation error, resuming producing messages
     	std::cerr << "You should provide assignment in the form: variable := expression ; " << std::endl;
     };*/
@@ -244,7 +245,6 @@ expr:
     }
     | "identifier" { 
         $$ = new VarExprNode($1, &(driver.storage));
-        /*driver.variables[$1];*/
     }
     | call_func {
         $$ = $1;
