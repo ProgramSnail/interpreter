@@ -1,34 +1,62 @@
-project(ParserExample)
+project(InterpreterProj)
+
+cmake_minimum_required(VERSION 3.13)
+
+set(CMAKE_CXX_STANDARD 14)
+
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
+
+
+enable_testing()
+
 set(
     HEADERS
-    ${ParserExample_SOURCE_DIR}/driver.hh
-    ${ParserExample_SOURCE_DIR}/parser.hh
+    ${InterpreterProj_SOURCE_DIR}/driver.hh
+    ${InterpreterProj_SOURCE_DIR}/parser.hh
+    parse_tree.hh
     )
 
 BISON_TARGET(
     MyParser
     parser.y
-    ${ParserExample_SOURCE_DIR}/parser.cpp
-    COMPILE_FLAGS --graph
-    DEFINES_FILE ${ParserExample_SOURCE_DIR}/parser.hh
+    ${InterpreterProj_SOURCE_DIR}/parser.cpp
+    COMPILE_FLAGS "--graph -Wcex -Werror"
+    DEFINES_FILE ${InterpreterProj_SOURCE_DIR}/parser.hh
 )
 
 FLEX_TARGET(
     MyScanner
     scanner.l
-    ${ParserExample_SOURCE_DIR}/scanner.cpp
+    ${InterpreterProj_SOURCE_DIR}/scanner.cpp
 )
 
 ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
 
 add_executable(
-    02-ParserExample
+    interpreter
     main.cpp
     driver.cpp
+    parse_tree.cpp
     ${BISON_MyParser_OUTPUTS}
     ${FLEX_MyScanner_OUTPUTS}
 )
-target_include_directories(02-ParserExample PRIVATE ${ParserExample_SOURCE_DIR})
 
+add_executable(
+    tests
+    tests.cpp
+    driver.cpp
+    parse_tree.cpp
+    ${BISON_MyParser_OUTPUTS}
+    ${FLEX_MyScanner_OUTPUTS}
+)
 
+target_link_libraries(tests gtest_main)
 
+add_subdirectory(googletest)
+
+include(GoogleTest)
+
+gtest_discover_tests(tests)
+
+include_directories(interpreter PRIVATE ${InterpreterProj_SOURCE_DIR})

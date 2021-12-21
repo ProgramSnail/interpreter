@@ -1,0 +1,51 @@
+a: #int;
+b: #int;
+c: #int;
+
+a = -3;
+b = 0;
+c = 20;
+
+? ($true) {
+	a = (a + b) + c;
+} : {
+	c = c + 3;
+}
+
+print(a);
+write("\n");
+
+? (c > b) {
+	c = c + 1;
+} : {
+	b = c + 1;
+}
+
+@ (c > b) {
+	b = b + 1;
+	c = c - 1;
+	print(b + 100);
+	write("\n");
+	print(c);
+	write("\n");
+}
+
+/*
+glksmdgfdg
+dsgsd
+gd
+gfd
+ghdhd
+h
+gs
+
+*/
+
+d: #int;
+
+write("abacaba\n");
+d = scan();
+print(d * d);
+write("\n");
+
+

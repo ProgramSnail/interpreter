@@ -1,5 +1,5 @@
 #include <iostream>
-#include <driver.hh>
+#include "driver.hh"
 
 int main(int argc, char** argv) {
     int result = 0;
@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
         } else if (argv[i] == std::string("-l")) {
             driver.location_debug = true;
         } else if (!driver.parse(argv[i])) {
-            std::cout << driver.result << std::endl;
+            //std::cerr << "Interpreting finished." << std::endl;
         } else {
             result = 1;
         }

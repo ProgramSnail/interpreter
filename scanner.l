@@ -35,6 +35,13 @@ id    [a-zA-Z][a-zA-Z_0-9]*
 int   [0-9]+
 blank [ \t\r]
 
+singleline_comment (\/\/.*\n)
+multiline_comment (\/\*[^\*\/]*\*\/)
+tag   #[a-zA-Z_0-9]+
+value $[a-zA-Z_0-9]+
+ch    ([^\\\"\']|(\\[\\\"\'0ntr]))
+
+
 %{
   // Code run each time a pattern is matched.
   #define YY_USER_ACTION UpdateLocation();
@@ -46,40 +53,64 @@ blank [ \t\r]
 %{
   // A handy shortcut to the location held by the driver.
   yy::location& loc = driver.location;
-  if (driver.location_debug) {
+  /*if (driver.location_debug) {
   // Code run each time yylex is called.
     std::cerr << "BEFORE " << loc << std::endl;
-  }
+  }*/
   // loc.step();
-  if (driver.location_debug) {
+  /*if (driver.location_debug) {
     std::cerr << "AFTER " <<  loc << std::endl;
-  }
+  }*/
 %}
 
+{singleline_comment} {}
+
+{multiline_comment} {}
+
 {blank}+   {
-    if (driver.location_debug) {
+    /*if (driver.location_debug) {
         std::cerr << "Blank matched" << std::endl;
-    }
+    }*/
     // loc.step();
 }
 \n+ {
-    if (driver.location_debug) {
+    /*if (driver.location_debug) {
         std::cerr << "EOL called" << std::endl;
-    }
+    }*/
     loc.lines(yyleng);
     loc.step();
 }
 
-"-"        {
-              return yy::parser::make_MINUS  (loc);
-           }
-"+"        return yy::parser::make_PLUS   (loc);
-"*"        return yy::parser::make_STAR   (loc);
-"/"        return yy::parser::make_SLASH  (loc);
-"("        return yy::parser::make_LPAREN (loc);
-")"        return yy::parser::make_RPAREN (loc);
-":="       return yy::parser::make_ASSIGN (loc);
+"="        return yy::parser::make_ASSIGN(loc);
+
+"-"        return yy::parser::make_MINUS(loc);
+"+"        return yy::parser::make_PLUS(loc);
+"*"        return yy::parser::make_STAR(loc);
+"/"        return yy::parser::make_SLASH(loc);
+"%"        return yy::parser::make_MOD(loc);
+
+","        return yy::parser::make_COMMA(loc);
+
+"=="       return yy::parser::make_EQUAL(loc);
+"!="       return yy::parser::make_NOT_EQUAL(loc);
+"<"        return yy::parser::make_LESS(loc);
+">"        return yy::parser::make_GREATHER(loc);
+
+"!"        return yy::parser::make_NOT(loc);
+"&"        return yy::parser::make_AND(loc);
+"|"        return yy::parser::make_OR(loc);
+
+"("        return yy::parser::make_LPAREN(loc);
+")"        return yy::parser::make_RPAREN(loc);
+"["        return yy::parser::make_LBRACKET(loc);
+"]"        return yy::parser::make_RBRACKET(loc);
+"{"        return yy::parser::make_LBLOCK(loc);
+"}"        return yy::parser::make_RBLOCK(loc);
+
+":"        return yy::parser::make_COLON(loc); 
 ";"        return yy::parser::make_SEMICOLON(loc);
+"?"        return yy::parser::make_CONDITION(loc);
+"@"        return yy::parser::make_LOOP(loc);
 
 {int}      return make_NUMBER(yytext, loc);
 {id}       {
@@ -88,6 +119,21 @@ blank [ \t\r]
                 }
                 return yy::parser::make_IDENTIFIER(yytext, loc);
            }
+{value}    {
+                std::string str(yytext);
+                if (str == "$true") {
+                    return yy::parser::make_LOGICAL_CONSTANT(true, loc);
+                } else if (str == "$false") {
+                    return yy::parser::make_LOGICAL_CONSTANT(false, loc);
+                } else {
+                    return yy::parser::make_VALUE(yytext, loc);
+                }
+           }
+
+{tag}      return yy::parser::make_TAG(yytext, loc);
+\'{ch}\'   return yy::parser::make_CHARACTER(yytext, loc);
+\"{ch}*\"  return yy::parser::make_STRING(yytext, loc);
+
 .          {
                 throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
            }
