@@ -10,3 +10,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 build
+parser.cpp
+parser.gv
+parser.hh
+scanner.cpp
